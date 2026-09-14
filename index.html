@@ -1,0 +1,1074 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Cricket Team Hub</title>
+
+  <!-- PWA & Mobile Meta Tags -->
+  <meta name="mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="Cricket Hub" />
+  <meta name="theme-color" content="#0f172a" />
+  <link rel="manifest" href="manifest.json" />
+
+  <!-- Tailwind CSS & Inter Font -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+  <!-- FontAwesome Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+
+  <style>
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    }
+    .tab-active {
+      color: #2563eb !important;
+      border-color: #2563eb !important;
+    }
+    /* Smooth card hover transitions */
+    .card-transition {
+      transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    .card-transition:hover {
+      transform: translateY(-1px);
+    }
+  </style>
+</head>
+<body class="bg-slate-50 text-slate-800 min-h-screen flex flex-col antialiased">
+
+  <!-- ==================== TOP NAVIGATION ==================== -->
+  <header class="bg-white border-b border-slate-200 sticky top-0 z-40 shadow-xs">
+    <div class="max-w-6xl mx-auto px-4 py-3 flex flex-wrap items-center justify-between gap-4">
+      
+      <!-- Brand & Icon -->
+      <div class="flex items-center gap-3">
+        <div class="w-9 h-9 rounded-xl bg-gradient-to-tr from-blue-700 to-indigo-600 flex items-center justify-center text-white shadow-sm">
+          <i class="fa-solid fa-baseball-bat-ball text-sm"></i>
+        </div>
+        <div>
+          <h1 class="text-base font-bold tracking-tight text-slate-900 leading-tight">Cricket Team Hub</h1>
+          <p class="text-[11px] text-slate-500 font-medium">Club Operations & Squad Management</p>
+        </div>
+      </div>
+
+      <!-- Controls: Club Settings & Persona Selector -->
+      <div class="flex items-center gap-2">
+        <button onclick="openModal('settingsModal')" class="manager-only px-2.5 py-1.5 text-xs font-medium text-slate-600 bg-slate-100 hover:bg-slate-200 rounded-lg flex items-center gap-1.5 transition">
+          <i class="fa-solid fa-gear text-slate-500"></i>
+          <span class="hidden sm:inline">Club Settings</span>
+        </button>
+
+        <div class="flex items-center gap-1.5 bg-slate-100 px-2.5 py-1 rounded-lg border border-slate-200">
+          <i class="fa-regular fa-circle-user text-slate-500 text-xs"></i>
+          <select id="personaSelect" onchange="switchPersona(this.value)" class="bg-transparent text-xs font-medium text-slate-700 outline-none cursor-pointer">
+            <option value="manager">👑 Manager / Captain</option>
+            <option value="p1">🏃 Hemant (All-Rounder)</option>
+            <option value="p2">🏃 Alex (Batsman)</option>
+            <option value="p3">🏃 Samir (Bowler)</option>
+          </select>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Navigation Sub-bar -->
+    <div class="max-w-6xl mx-auto px-4 flex gap-6 text-xs font-medium text-slate-500 overflow-x-auto">
+      <button onclick="switchTab('fixtures')" id="tab-fixtures" class="py-2.5 border-b-2 border-transparent tab-active flex items-center gap-1.5 transition">
+        <i class="fa-regular fa-calendar-check"></i> Fixtures & RSVPs
+      </button>
+      <button onclick="switchTab('lineup')" id="tab-lineup" class="py-2.5 border-b-2 border-transparent hover:text-slate-900 flex items-center gap-1.5 transition">
+        <i class="fa-solid fa-users-viewfinder"></i> Playing XI Builder
+      </button>
+      <button onclick="switchTab('dues')" id="tab-dues" class="py-2.5 border-b-2 border-transparent hover:text-slate-900 flex items-center gap-1.5 transition">
+        <i class="fa-solid fa-receipt"></i> Match Dues
+      </button>
+      <button onclick="switchTab('community')" id="tab-community" class="py-2.5 border-b-2 border-transparent hover:text-slate-900 flex items-center gap-1.5 transition">
+        <i class="fa-regular fa-comments"></i> Discussions & Polls
+      </button>
+      <button onclick="switchTab('roster')" id="tab-roster" class="py-2.5 border-b-2 border-transparent hover:text-slate-900 flex items-center gap-1.5 transition">
+        <i class="fa-solid fa-address-book"></i> Squad Roster
+      </button>
+    </div>
+  </header>
+
+  <!-- ==================== MAIN APPLICATION CONTAINER ==================== -->
+  <main class="max-w-6xl mx-auto p-4 sm:p-6 flex-1 w-full space-y-6">
+
+    <!-- ==================== TAB 1: FIXTURES & RSVPs ==================== -->
+    <section id="view-fixtures" class="space-y-4">
+      <div class="flex items-center justify-between">
+        <div>
+          <h2 class="text-lg font-bold text-slate-900">Matches & Attendance</h2>
+          <p class="text-xs text-slate-500">View upcoming fixtures, submit availability, and review match outcomes.</p>
+        </div>
+        <button onclick="openModal('addFixtureModal')" class="manager-only px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold rounded-lg shadow-xs flex items-center gap-1.5 transition">
+          <i class="fa-solid fa-plus text-xs"></i> New Fixture
+        </button>
+      </div>
+
+      <div id="fixturesList" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <!-- Injected via JavaScript -->
+      </div>
+    </section>
+
+    <!-- ==================== TAB 2: PLAYING XI BUILDER ==================== -->
+    <section id="view-lineup" class="hidden space-y-4">
+      <div class="flex flex-wrap items-center justify-between gap-3">
+        <div>
+          <h2 class="text-lg font-bold text-slate-900">Match Day Playing XI</h2>
+          <p class="text-xs text-slate-500">Pick starting players, reorder batting order, and appoint Captain & Wicketkeeper.</p>
+        </div>
+        <label class="inline-flex items-center gap-2 text-xs font-medium text-slate-700 cursor-pointer bg-white px-3 py-1.5 rounded-lg border border-slate-200">
+          <input type="checkbox" id="filterAttendingOnly" onchange="renderLineupBuilder()" class="rounded text-blue-600 focus:ring-0" checked />
+          <span>Show Confirmed Attendees Only</span>
+        </label>
+      </div>
+
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 items-start">
+        <!-- Player Pool -->
+        <div class="bg-white rounded-xl border border-slate-200 p-4 shadow-xs space-y-3">
+          <div class="flex items-center justify-between border-b border-slate-100 pb-2.5">
+            <span class="text-xs font-bold uppercase tracking-wider text-slate-500">Available Squad Pool</span>
+            <span id="poolCount" class="text-[11px] font-semibold text-slate-600 bg-slate-100 px-2 py-0.5 rounded-full">0</span>
+          </div>
+          <div id="playerPoolList" class="space-y-1.5 max-h-[500px] overflow-y-auto pr-1"></div>
+        </div>
+
+        <!-- Selected Lineup -->
+        <div class="bg-white rounded-xl border border-slate-200 p-4 shadow-xs space-y-3">
+          <div class="flex items-center justify-between border-b border-slate-100 pb-2.5">
+            <div class="flex items-center gap-2">
+              <span class="text-xs font-bold uppercase tracking-wider text-slate-500">Batting Lineup</span>
+              <span id="xiCount" class="text-xs font-bold px-2 py-0.5 rounded-full bg-blue-50 text-blue-700">0 / 11</span>
+            </div>
+            <button onclick="resetPlayingXI()" class="text-xs text-rose-600 hover:underline font-medium">Clear XI</button>
+          </div>
+          <div id="playingXIList" class="space-y-1.5 min-h-[300px]"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ==================== TAB 3: MATCH DUES & LEDGER ==================== -->
+    <section id="view-dues" class="hidden space-y-4">
+      <div class="bg-white rounded-xl border border-slate-200 p-5 shadow-xs space-y-4">
+        <div class="flex flex-wrap items-center justify-between gap-3 border-b border-slate-100 pb-4">
+          <div>
+            <h2 class="text-lg font-bold text-slate-900">Match Dues & Fee Ledger</h2>
+            <p class="text-xs text-slate-500">Match fee configuration and player balance collection.</p>
+          </div>
+          <div class="flex items-center gap-2">
+            <label for="duesFixtureSelect" class="text-xs font-medium text-slate-500">Fixture:</label>
+            <select id="duesFixtureSelect" onchange="renderDuesTable()" class="text-xs bg-slate-50 border border-slate-200 rounded-lg px-2.5 py-1.5 font-medium text-slate-700 outline-none">
+              <!-- Populated by JavaScript -->
+            </select>
+          </div>
+        </div>
+
+        <div id="duesTableContainer" class="overflow-x-auto">
+          <!-- Rendered dynamically -->
+        </div>
+      </div>
+    </section>
+
+    <!-- ==================== TAB 4: DISCUSSIONS & POLLS ==================== -->
+    <section id="view-community" class="hidden space-y-4">
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
+        <!-- Team Polls -->
+        <div class="lg:col-span-1 bg-white rounded-xl border border-slate-200 p-4 shadow-xs space-y-3">
+          <div class="flex items-center justify-between border-b border-slate-100 pb-2.5">
+            <span class="text-xs font-bold uppercase tracking-wider text-slate-500">Quick Match Polls</span>
+            <button onclick="openModal('addPollModal')" class="manager-only text-[11px] font-semibold text-blue-600 hover:text-blue-700 bg-blue-50 px-2 py-0.5 rounded transition">+ New</button>
+          </div>
+          <div id="pollsContainer" class="space-y-3"></div>
+        </div>
+
+        <!-- Chat Stream -->
+        <div class="lg:col-span-2 bg-white rounded-xl border border-slate-200 shadow-xs flex flex-col h-[520px]">
+          <div class="p-3.5 border-b border-slate-100 flex items-center justify-between bg-slate-50/50 rounded-t-xl">
+            <div class="flex items-center gap-2">
+              <span class="w-2 h-2 rounded-full bg-emerald-500"></span>
+              <h3 class="text-xs font-bold uppercase tracking-wider text-slate-700">Team Room & Logistics</h3>
+            </div>
+            <span class="text-[11px] text-slate-400 font-medium">Real-time discussion</span>
+          </div>
+
+          <div id="chatMessages" class="flex-1 p-4 overflow-y-auto space-y-2.5 text-xs"></div>
+
+          <form onsubmit="postChatMessage(event)" class="p-2.5 border-t border-slate-100 flex gap-2 bg-white rounded-b-xl">
+            <input type="text" id="chatInput" placeholder="Share an update, carpool note, or pitch report..." required class="flex-1 text-xs bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 outline-none focus:border-blue-500" />
+            <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white px-3 py-2 rounded-lg text-xs font-semibold transition">
+              <i class="fa-solid fa-paper-plane"></i>
+            </button>
+          </form>
+        </div>
+      </div>
+    </section>
+
+    <!-- ==================== TAB 5: SQUAD ROSTER ==================== -->
+    <section id="view-roster" class="hidden space-y-4">
+      <div class="flex items-center justify-between">
+        <div>
+          <h2 class="text-lg font-bold text-slate-900">Squad Roster</h2>
+          <p class="text-xs text-slate-500">Player profiles, batting styles, and bowling variations.</p>
+        </div>
+        <button onclick="openModal('addPlayerModal')" class="manager-only px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold rounded-lg shadow-xs transition">
+          + Add Player
+        </button>
+      </div>
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3" id="rosterList"></div>
+    </section>
+
+  </main>
+
+  <!-- ==================== MODALS ==================== -->
+
+  <!-- Modal: Club Settings (Configurable default match fee) -->
+  <div id="settingsModal" class="hidden fixed inset-0 bg-slate-900/40 backdrop-blur-xs flex items-center justify-center p-4 z-50">
+    <div class="bg-white rounded-xl max-w-sm w-full p-5 shadow-lg border border-slate-200">
+      <div class="flex items-center justify-between mb-3 border-b border-slate-100 pb-2">
+        <h3 class="text-sm font-bold text-slate-900">Club Global Settings</h3>
+        <button onclick="closeModal('settingsModal')" class="text-slate-400 hover:text-slate-600 text-xs"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+      <form onsubmit="saveClubSettings(event)" class="space-y-3 text-xs">
+        <div>
+          <label class="block font-medium text-slate-700 mb-1">Standard League Match Fee ($)</label>
+          <input type="number" id="globalDefaultFee" min="0" step="1" required class="w-full border border-slate-200 rounded-lg p-2 bg-slate-50 outline-none focus:border-blue-500" />
+          <p class="text-[11px] text-slate-400 mt-1">Default fee populated when scheduling new matches.</p>
+        </div>
+        <div class="flex justify-end gap-2 pt-2">
+          <button type="button" onclick="closeModal('settingsModal')" class="px-3 py-1.5 text-slate-600 hover:bg-slate-100 rounded-lg">Cancel</button>
+          <button type="submit" class="px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-lg">Save Settings</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Modal: Schedule Fixture -->
+  <div id="addFixtureModal" class="hidden fixed inset-0 bg-slate-900/40 backdrop-blur-xs flex items-center justify-center p-4 z-50">
+    <div class="bg-white rounded-xl max-w-md w-full p-5 shadow-lg border border-slate-200">
+      <div class="flex items-center justify-between mb-3 border-b border-slate-100 pb-2">
+        <h3 class="text-sm font-bold text-slate-900">Schedule New Fixture</h3>
+        <button onclick="closeModal('addFixtureModal')" class="text-slate-400 hover:text-slate-600 text-xs"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+      <form onsubmit="createFixture(event)" class="space-y-3 text-xs">
+        <div>
+          <label class="block font-medium text-slate-700 mb-1">Opponent Name</label>
+          <input type="text" id="fixOpponent" placeholder="e.g. Royal Montreal CC" required class="w-full border border-slate-200 rounded-lg p-2 bg-slate-50 outline-none focus:border-blue-500" />
+        </div>
+        <div class="grid grid-cols-2 gap-2">
+          <div>
+            <label class="block font-medium text-slate-700 mb-1">Date</label>
+            <input type="date" id="fixDate" required class="w-full border border-slate-200 rounded-lg p-2 bg-slate-50 outline-none focus:border-blue-500" />
+          </div>
+          <div>
+            <label class="block font-medium text-slate-700 mb-1">Time</label>
+            <input type="text" id="fixTime" placeholder="e.g. 10:00 AM" required class="w-full border border-slate-200 rounded-lg p-2 bg-slate-50 outline-none focus:border-blue-500" />
+          </div>
+        </div>
+        <div class="grid grid-cols-2 gap-2">
+          <div>
+            <label class="block font-medium text-slate-700 mb-1">Match Format</label>
+            <select id="fixFormat" class="w-full border border-slate-200 rounded-lg p-2 bg-slate-50 outline-none focus:border-blue-500">
+              <option value="T20 Match">T20 Match</option>
+              <option value="T30 Match">T30 Match</option>
+              <option value="40 Overs">40 Overs</option>
+              <option value="Practice Match">Practice / Friendly</option>
+            </select>
+          </div>
+          <div>
+            <label class="block font-medium text-slate-700 mb-1">Venue</label>
+            <input type="text" id="fixVenue" placeholder="e.g. Parc Marcelin-Wilson" required class="w-full border border-slate-200 rounded-lg p-2 bg-slate-50 outline-none focus:border-blue-500" />
+          </div>
+        </div>
+
+        <!-- Configurable Match Fee Option for this match -->
+        <div class="p-3 bg-slate-50 border border-slate-200 rounded-lg space-y-2">
+          <label class="inline-flex items-center gap-2 cursor-pointer">
+            <input type="checkbox" id="fixFeeApplicable" onchange="toggleFeeInputVisibility()" checked class="rounded text-blue-600 focus:ring-0" />
+            <span class="font-medium text-slate-700">Match fee applies to this game</span>
+          </label>
+          <div id="feeInputContainer" class="flex items-center gap-2 pt-1">
+            <span class="text-slate-500">$</span>
+            <input type="number" id="fixFeeAmount" min="0" step="1" class="w-24 border border-slate-200 rounded-md p-1.5 bg-white outline-none focus:border-blue-500" />
+            <span class="text-[11px] text-slate-400">per player</span>
+          </div>
+        </div>
+
+        <div class="flex justify-end gap-2 pt-2">
+          <button type="button" onclick="closeModal('addFixtureModal')" class="px-3 py-1.5 text-slate-600 hover:bg-slate-100 rounded-lg">Cancel</button>
+          <button type="submit" class="px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-lg">Schedule Match</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Modal: Post Match Report -->
+  <div id="matchReportModal" class="hidden fixed inset-0 bg-slate-900/40 backdrop-blur-xs flex items-center justify-center p-4 z-50">
+    <div class="bg-white rounded-xl max-w-sm w-full p-5 shadow-lg border border-slate-200">
+      <h3 class="text-sm font-bold text-slate-900 mb-3">Record Match Summary</h3>
+      <form onsubmit="saveMatchReport(event)" class="space-y-3 text-xs">
+        <input type="hidden" id="reportFixtureId" />
+        <div>
+          <label class="block font-medium text-slate-700 mb-1">Our Score</label>
+          <input type="text" id="ourScore" placeholder="e.g. 175/6 (20.0 ov)" required class="w-full border rounded-lg p-2 bg-slate-50" />
+        </div>
+        <div>
+          <label class="block font-medium text-slate-700 mb-1">Opponent Score</label>
+          <input type="text" id="opponentScore" placeholder="e.g. 150/9 (20.0 ov)" required class="w-full border rounded-lg p-2 bg-slate-50" />
+        </div>
+        <div>
+          <label class="block font-medium text-slate-700 mb-1">Result</label>
+          <select id="matchResult" class="w-full border rounded-lg p-2 bg-slate-50">
+            <option value="Won">Won</option>
+            <option value="Lost">Lost</option>
+            <option value="Tied">Tied</option>
+            <option value="Abandoned">Abandoned</option>
+          </select>
+        </div>
+        <div>
+          <label class="block font-medium text-slate-700 mb-1">Player of the Match</label>
+          <select id="potmSelect" class="w-full border rounded-lg p-2 bg-slate-50"></select>
+        </div>
+        <div>
+          <label class="block font-medium text-slate-700 mb-1">Match Highlights</label>
+          <textarea id="matchNotes" rows="2" placeholder="Key innings, wickets, or moments..." class="w-full border rounded-lg p-2 bg-slate-50"></textarea>
+        </div>
+        <div class="flex justify-end gap-2 pt-2">
+          <button type="button" onclick="closeModal('matchReportModal')" class="px-3 py-1.5 text-slate-600 hover:bg-slate-100 rounded-lg">Cancel</button>
+          <button type="submit" class="px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-lg">Save Summary</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Modal: Add Poll -->
+  <div id="addPollModal" class="hidden fixed inset-0 bg-slate-900/40 backdrop-blur-xs flex items-center justify-center p-4 z-50">
+    <div class="bg-white rounded-xl max-w-sm w-full p-5 shadow-lg border border-slate-200">
+      <h3 class="text-sm font-bold text-slate-900 mb-3">Create Team Poll</h3>
+      <form onsubmit="createPoll(event)" class="space-y-3 text-xs">
+        <div>
+          <label class="block font-medium text-slate-700 mb-1">Question</label>
+          <input type="text" id="pollQuestion" placeholder="e.g. Carpool needed from Cartierville?" required class="w-full border rounded-lg p-2 bg-slate-50" />
+        </div>
+        <div>
+          <label class="block font-medium text-slate-700 mb-1">Option 1</label>
+          <input type="text" id="pollOpt1" placeholder="Yes, need a ride" required class="w-full border rounded-lg p-2 bg-slate-50" />
+        </div>
+        <div>
+          <label class="block font-medium text-slate-700 mb-1">Option 2</label>
+          <input type="text" id="pollOpt2" placeholder="No, driving directly" required class="w-full border rounded-lg p-2 bg-slate-50" />
+        </div>
+        <div class="flex justify-end gap-2 pt-2">
+          <button type="button" onclick="closeModal('addPollModal')" class="px-3 py-1.5 text-slate-600 hover:bg-slate-100 rounded-lg">Cancel</button>
+          <button type="submit" class="px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-lg">Post Poll</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Modal: Add Player -->
+  <div id="addPlayerModal" class="hidden fixed inset-0 bg-slate-900/40 backdrop-blur-xs flex items-center justify-center p-4 z-50">
+    <div class="bg-white rounded-xl max-w-sm w-full p-5 shadow-lg border border-slate-200">
+      <h3 class="text-sm font-bold text-slate-900 mb-3">Add Squad Member</h3>
+      <form onsubmit="createPlayer(event)" class="space-y-3 text-xs">
+        <div>
+          <label class="block font-medium text-slate-700 mb-1">Player Name</label>
+          <input type="text" id="playerNameInput" placeholder="Full name" required class="w-full border rounded-lg p-2 bg-slate-50" />
+        </div>
+        <div>
+          <label class="block font-medium text-slate-700 mb-1">Role</label>
+          <select id="playerRoleInput" class="w-full border rounded-lg p-2 bg-slate-50">
+            <option value="Batsman">Batsman</option>
+            <option value="Bowler">Bowler</option>
+            <option value="All-Rounder">All-Rounder</option>
+            <option value="Wicketkeeper">Wicketkeeper</option>
+          </select>
+        </div>
+        <div class="grid grid-cols-2 gap-2">
+          <div>
+            <label class="block font-medium text-slate-700 mb-1">Batting Hand</label>
+            <select id="playerBatInput" class="w-full border rounded-lg p-2 bg-slate-50">
+              <option value="Right">Right Hand</option>
+              <option value="Left">Left Hand</option>
+            </select>
+          </div>
+          <div>
+            <label class="block font-medium text-slate-700 mb-1">Bowling Style</label>
+            <input type="text" id="playerBowlInput" placeholder="e.g. Right-arm Fast" required class="w-full border rounded-lg p-2 bg-slate-50" />
+          </div>
+        </div>
+        <div class="flex justify-end gap-2 pt-2">
+          <button type="button" onclick="closeModal('addPlayerModal')" class="px-3 py-1.5 text-slate-600 hover:bg-slate-100 rounded-lg">Cancel</button>
+          <button type="submit" class="px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-lg">Add to Squad</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ==================== JAVASCRIPT APP LOGIC ==================== -->
+  <script>
+    // --- 1. DEFAULT DATA STRUCTURES ---
+    const DEFAULT_CONFIG = {
+      defaultMatchFee: 20
+    };
+
+    const DEFAULT_PLAYERS = [
+      { id: "p1", name: "Hemant Khamkar", role: "All-Rounder", bat: "Right", bowl: "Right-arm Medium" },
+      { id: "p2", name: "Alex Mercer", role: "Batsman", bat: "Right", bowl: "Right-arm Offbreak" },
+      { id: "p3", name: "Samir Khan", role: "Bowler", bat: "Right", bowl: "Right-arm Fast" },
+      { id: "p4", name: "Rahul Verma", role: "Wicketkeeper", bat: "Right", bowl: "None" },
+      { id: "p5", name: "David Miller", role: "Batsman", bat: "Left", bowl: "Right-arm Medium" },
+      { id: "p6", name: "Chris Gayle", role: "All-Rounder", bat: "Left", bowl: "Right-arm Offbreak" },
+      { id: "p7", name: "Trent Boult", role: "Bowler", bat: "Right", bowl: "Left-arm Fast" },
+      { id: "p8", name: "Rashid Ali", role: "Bowler", bat: "Right", bowl: "Legbreak Googly" },
+      { id: "p9", name: "Kane Smith", role: "Batsman", bat: "Right", bowl: "Right-arm Offbreak" },
+      { id: "p10", name: "Ben Stokes", role: "All-Rounder", bat: "Left", bowl: "Right-arm Fast-medium" },
+      { id: "p11", name: "Mark Boucher", role: "Wicketkeeper", bat: "Right", bowl: "None" },
+      { id: "p12", name: "Glenn Maxwell", role: "All-Rounder", bat: "Right", bowl: "Right-arm Offbreak" }
+    ];
+
+    const DEFAULT_FIXTURES = [
+      {
+        id: "fix_1",
+        opponent: "Montréal Tigers CC",
+        date: "2026-09-19",
+        time: "10:00 AM",
+        format: "T20 Match",
+        venue: "Parc Marcelin-Wilson, Montreal",
+        feeApplicable: true,
+        fee: 25,
+        status: "Upcoming",
+        rsvps: {
+          "p1": "attending", "p2": "attending", "p3": "attending", "p4": "attending",
+          "p5": "attending", "p6": "attending", "p7": "tentative", "p8": "declined",
+          "p9": "attending", "p10": "attending", "p11": "attending", "p12": "attending"
+        },
+        dues: { "p1": "Paid", "p2": "Pending", "p3": "Paid", "p4": "Paid" },
+        report: null
+      },
+      {
+        id: "fix_practice",
+        opponent: "Internal Squad Friendly",
+        date: "2026-09-23",
+        time: "06:00 PM",
+        format: "Practice Match",
+        venue: "Ground B Nets",
+        feeApplicable: false, // Match fee NOT applied here
+        fee: 0,
+        status: "Upcoming",
+        rsvps: { "p1": "attending", "p2": "attending", "p3": "attending" },
+        dues: {},
+        report: null
+      },
+      {
+        id: "fix_0",
+        opponent: "Westmount CC",
+        date: "2026-09-05",
+        time: "11:00 AM",
+        format: "T20 Match",
+        venue: "Westmount Oval",
+        feeApplicable: true,
+        fee: 20,
+        status: "Completed",
+        rsvps: { "p1": "attending", "p2": "attending", "p3": "attending" },
+        dues: { "p1": "Paid", "p2": "Paid" },
+        report: {
+          ourScore: "168/5 (20.0 ov)",
+          opponentScore: "142/9 (20.0 ov)",
+          result: "Won",
+          potm: "Hemant Khamkar",
+          notes: "Solid opening partnership and disciplined bowling at the death."
+        }
+      }
+    ];
+
+    const DEFAULT_POLLS = [
+      {
+        id: "poll_1",
+        question: "Match ball preference for Sunday?",
+        options: [
+          { text: "Kookaburra Red Turf", votes: 8 },
+          { text: "White Club Leather", votes: 3 }
+        ]
+      }
+    ];
+
+    const DEFAULT_CHATS = [
+      { id: "c1", author: "Manager", text: "Match fee for Saturday is $25 to cover ground rental and neutral umpires.", time: "10:30 AM", isManager: true },
+      { id: "c2", author: "Hemant", text: "Got it, confirmed RSVP!", time: "11:00 AM", isManager: false }
+    ];
+
+    // --- 2. LOCALSTORAGE INITIALIZATION ---
+    let config = JSON.parse(localStorage.getItem("cricket_config")) || DEFAULT_CONFIG;
+    let players = JSON.parse(localStorage.getItem("cricket_players")) || DEFAULT_PLAYERS;
+    let fixtures = JSON.parse(localStorage.getItem("cricket_fixtures")) || DEFAULT_FIXTURES;
+    let polls = JSON.parse(localStorage.getItem("cricket_polls")) || DEFAULT_POLLS;
+    let chatMessages = JSON.parse(localStorage.getItem("cricket_chats")) || DEFAULT_CHATS;
+    let playingXI = JSON.parse(localStorage.getItem("cricket_playingXI")) || [
+      { id: "p1", isCaptain: true, isWK: false },
+      { id: "p2", isCaptain: false, isWK: false },
+      { id: "p4", isCaptain: false, isWK: true },
+      { id: "p5", isCaptain: false, isWK: false },
+      { id: "p6", isCaptain: false, isWK: false },
+      { id: "p10", isCaptain: false, isWK: false },
+      { id: "p12", isCaptain: false, isWK: false },
+      { id: "p3", isCaptain: false, isWK: false },
+      { id: "p7", isCaptain: false, isWK: false },
+      { id: "p9", isCaptain: false, isWK: false },
+      { id: "p11", isCaptain: false, isWK: false }
+    ];
+
+    let currentPersona = "manager";
+
+    function saveState() {
+      localStorage.setItem("cricket_config", JSON.stringify(config));
+      localStorage.setItem("cricket_players", JSON.stringify(players));
+      localStorage.setItem("cricket_fixtures", JSON.stringify(fixtures));
+      localStorage.setItem("cricket_polls", JSON.stringify(polls));
+      localStorage.setItem("cricket_chats", JSON.stringify(chatMessages));
+      localStorage.setItem("cricket_playingXI", JSON.stringify(playingXI));
+    }
+
+    // --- 3. TAB & PERSONA NAVIGATION ---
+    function switchTab(tabId) {
+      ["fixtures", "lineup", "dues", "community", "roster"].forEach(tab => {
+        const viewEl = document.getElementById(`view-${tab}`);
+        const tabEl = document.getElementById(`tab-${tab}`);
+        if (tab === tabId) {
+          viewEl.classList.remove("hidden");
+          tabEl.classList.add("tab-active");
+        } else {
+          viewEl.classList.add("hidden");
+          tabEl.classList.remove("tab-active");
+        }
+      });
+      renderCurrentTab(tabId);
+    }
+
+    function switchPersona(val) {
+      currentPersona = val;
+      const managerElements = document.querySelectorAll(".manager-only");
+      managerElements.forEach(el => {
+        if (currentPersona === "manager") {
+          el.classList.remove("hidden");
+        } else {
+          el.classList.add("hidden");
+        }
+      });
+      renderFixtures();
+      renderDuesTable();
+    }
+
+    function renderCurrentTab(tabId) {
+      if (tabId === "fixtures") renderFixtures();
+      if (tabId === "lineup") renderLineupBuilder();
+      if (tabId === "dues") { populateDuesDropdown(); renderDuesTable(); }
+      if (tabId === "community") { renderPolls(); renderChat(); }
+      if (tabId === "roster") renderRoster();
+    }
+
+    // --- 4. CLUB SETTINGS & CONFIGURATION ---
+    function saveClubSettings(event) {
+      event.preventDefault();
+      const newFee = parseFloat(document.getElementById("globalDefaultFee").value) || 0;
+      config.defaultMatchFee = newFee;
+      saveState();
+      closeModal("settingsModal");
+      alert("Club settings saved!");
+    }
+
+    function toggleFeeInputVisibility() {
+      const isFeeChecked = document.getElementById("fixFeeApplicable").checked;
+      const feeInputContainer = document.getElementById("feeInputContainer");
+      if (isFeeChecked) {
+        feeInputContainer.classList.remove("hidden");
+      } else {
+        feeInputContainer.classList.add("hidden");
+      }
+    }
+
+    // --- 5. FIXTURES & RSVPs RENDERING ---
+    function renderFixtures() {
+      const container = document.getElementById("fixturesList");
+      container.innerHTML = "";
+
+      fixtures.forEach(fixture => {
+        const rsvps = fixture.rsvps || {};
+        let attending = 0, tentative = 0, declined = 0;
+        Object.values(rsvps).forEach(s => {
+          if (s === "attending") attending++;
+          if (s === "tentative") tentative++;
+          if (s === "declined") declined++;
+        });
+
+        const myStatus = currentPersona !== "manager" ? (rsvps[currentPersona] || "unanswered") : null;
+
+        const card = document.createElement("div");
+        card.className = "bg-white rounded-xl border border-slate-200 p-4 shadow-xs card-transition space-y-3.5";
+
+        card.innerHTML = `
+          <!-- Header -->
+          <div class="flex items-start justify-between gap-3">
+            <div>
+              <div class="flex items-center gap-1.5 flex-wrap">
+                <span class="text-[10px] font-bold px-2 py-0.5 rounded-full ${fixture.status === 'Completed' ? 'bg-slate-100 text-slate-700' : 'bg-blue-50 text-blue-700'}">
+                  ${fixture.format}
+                </span>
+
+                <!-- Configurable Fee Badge -->
+                ${fixture.feeApplicable ? `
+                  <span class="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700">
+                    Fee: $${fixture.fee}
+                  </span>
+                ` : `
+                  <span class="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-slate-100 text-slate-500">
+                    No Match Fee
+                  </span>
+                `}
+              </div>
+              <h3 class="text-base font-bold text-slate-900 mt-1">vs. ${fixture.opponent}</h3>
+              <p class="text-xs text-slate-500 flex items-center gap-1.5 mt-0.5">
+                <i class="fa-regular fa-calendar text-slate-400"></i> ${fixture.date} • ${fixture.time}
+              </p>
+              <p class="text-[11px] text-slate-400 flex items-center gap-1.5">
+                <i class="fa-solid fa-location-dot text-slate-400"></i> ${fixture.venue}
+              </p>
+            </div>
+
+            <!-- Match Outcome / Report Button -->
+            <div>
+              ${fixture.report ? `
+                <span class="text-[11px] font-bold px-2.5 py-1 rounded-lg bg-emerald-100 text-emerald-800">
+                  ${fixture.report.result}
+                </span>
+              ` : `
+                <button onclick="openMatchReportModal('${fixture.id}')" class="manager-only text-[11px] font-medium text-slate-600 bg-slate-100 hover:bg-slate-200 px-2.5 py-1 rounded-lg transition border border-slate-200">
+                  Summary
+                </button>
+              `}
+            </div>
+          </div>
+
+          <!-- Attendance Stats Bar -->
+          <div class="grid grid-cols-3 gap-1 bg-slate-50 p-2 rounded-lg text-center text-[11px] border border-slate-100">
+            <div><span class="font-bold text-emerald-600">${attending}</span> <span class="text-slate-400">Yes</span></div>
+            <div><span class="font-bold text-amber-500">${tentative}</span> <span class="text-slate-400">Maybe</span></div>
+            <div><span class="font-bold text-rose-500">${declined}</span> <span class="text-slate-400">No</span></div>
+          </div>
+
+          <!-- Match Report Card (Completed) -->
+          ${fixture.report ? `
+            <div class="p-2.5 bg-slate-50 rounded-lg border border-slate-100 text-[11px] space-y-1">
+              <div class="flex justify-between font-medium text-slate-700">
+                <span>Scores: <strong>${fixture.report.ourScore}</strong></span>
+                <span class="text-slate-500">Opp: ${fixture.report.opponentScore}</span>
+              </div>
+              <p class="text-slate-600">★ POTM: <strong class="text-blue-700">${fixture.report.potm}</strong></p>
+            </div>
+          ` : ''}
+
+          <!-- Player RSVP Controls -->
+          ${currentPersona !== "manager" ? `
+            <div class="flex items-center justify-between pt-2 border-t border-slate-100 text-xs">
+              <span class="text-[11px] text-slate-500 font-medium">Your RSVP: <strong class="uppercase text-blue-600">${myStatus}</strong></span>
+              <div class="flex gap-1">
+                <button onclick="setRSVP('${fixture.id}', '${currentPersona}', 'attending')" class="px-2 py-1 text-[11px] rounded ${myStatus === 'attending' ? 'bg-emerald-600 text-white font-medium' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'}">Attending</button>
+                <button onclick="setRSVP('${fixture.id}', '${currentPersona}', 'tentative')" class="px-2 py-1 text-[11px] rounded ${myStatus === 'tentative' ? 'bg-amber-500 text-white font-medium' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'}">Maybe</button>
+                <button onclick="setRSVP('${fixture.id}', '${currentPersona}', 'declined')" class="px-2 py-1 text-[11px] rounded ${myStatus === 'declined' ? 'bg-rose-600 text-white font-medium' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'}">Decline</button>
+              </div>
+            </div>
+          ` : ''}
+        `;
+        container.appendChild(card);
+      });
+
+      switchPersona(currentPersona);
+    }
+
+    function createFixture(event) {
+      event.preventDefault();
+      const feeApplicable = document.getElementById("fixFeeApplicable").checked;
+      const feeAmount = feeApplicable ? (parseFloat(document.getElementById("fixFeeAmount").value) || 0) : 0;
+
+      const newFixture = {
+        id: "fix_" + Date.now(),
+        opponent: document.getElementById("fixOpponent").value,
+        date: document.getElementById("fixDate").value,
+        time: document.getElementById("fixTime").value,
+        format: document.getElementById("fixFormat").value,
+        venue: document.getElementById("fixVenue").value,
+        feeApplicable: feeApplicable,
+        fee: feeAmount,
+        status: "Upcoming",
+        rsvps: {},
+        dues: {},
+        report: null
+      };
+
+      fixtures.unshift(newFixture);
+      saveState();
+      closeModal("addFixtureModal");
+      renderFixtures();
+    }
+
+    function setRSVP(fixId, pId, status) {
+      const fix = fixtures.find(f => f.id === fixId);
+      if (!fix) return;
+      if (!fix.rsvps) fix.rsvps = {};
+      fix.rsvps[pId] = status;
+      saveState();
+      renderFixtures();
+    }
+
+    // --- 6. PLAYING XI BUILDER ---
+    function renderLineupBuilder() {
+      const filterAttending = document.getElementById("filterAttendingOnly").checked;
+      const activeFixture = fixtures[0];
+
+      const poolList = document.getElementById("playerPoolList");
+      const xiList = document.getElementById("playingXIList");
+      poolList.innerHTML = "";
+      xiList.innerHTML = "";
+
+      const xiIds = playingXI.map(item => item.id);
+      let pool = players.filter(p => !xiIds.includes(p.id));
+
+      if (filterAttending && activeFixture && activeFixture.rsvps) {
+        pool = pool.filter(p => activeFixture.rsvps[p.id] === "attending");
+      }
+
+      document.getElementById("poolCount").innerText = `${pool.length} available`;
+      document.getElementById("xiCount").innerText = `${playingXI.length} / 11`;
+
+      pool.forEach(player => {
+        const item = document.createElement("div");
+        item.className = "p-2 rounded-lg border border-slate-100 bg-slate-50 flex items-center justify-between text-xs";
+        item.innerHTML = `
+          <div>
+            <div class="font-semibold text-slate-800">${player.name}</div>
+            <div class="text-[11px] text-slate-400">${player.role} • ${player.bat}</div>
+          </div>
+          <button onclick="addToXI('${player.id}')" class="px-2 py-1 bg-blue-600 hover:bg-blue-700 text-white rounded-md text-[11px] font-medium transition">
+            + Pick
+          </button>
+        `;
+        poolList.appendChild(item);
+      });
+
+      playingXI.forEach((item, index) => {
+        const player = players.find(p => p.id === item.id);
+        if (!player) return;
+
+        const row = document.createElement("div");
+        row.className = "p-2 rounded-lg border border-slate-100 bg-white flex items-center justify-between text-xs shadow-2xs";
+        row.innerHTML = `
+          <div class="flex items-center gap-2">
+            <span class="w-5 h-5 rounded-md bg-slate-100 text-slate-600 flex items-center justify-center font-bold text-[10px]">${index + 1}</span>
+            <div>
+              <span class="font-semibold text-slate-800">${player.name}</span>
+              ${item.isCaptain ? '<span class="ml-1 bg-amber-100 text-amber-800 px-1 py-0.2 rounded font-bold text-[9px]">C</span>' : ''}
+              ${item.isWK ? '<span class="ml-1 bg-indigo-100 text-indigo-800 px-1 py-0.2 rounded font-bold text-[9px]">WK</span>' : ''}
+              <div class="text-[10px] text-slate-400">${player.role}</div>
+            </div>
+          </div>
+          <div class="flex items-center gap-1">
+            <button onclick="movePlayer(${index}, -1)" ${index === 0 ? 'disabled class="opacity-20"' : ''} class="p-1 hover:bg-slate-100 rounded text-slate-500">▲</button>
+            <button onclick="movePlayer(${index}, 1)" ${index === playingXI.length - 1 ? 'disabled class="opacity-20"' : ''} class="p-1 hover:bg-slate-100 rounded text-slate-500">▼</button>
+            <button onclick="toggleCaptain(${index})" class="px-1.5 py-0.5 rounded text-[10px] font-bold ${item.isCaptain ? 'bg-amber-600 text-white' : 'bg-slate-100 text-slate-600'}">C</button>
+            <button onclick="toggleWK(${index})" class="px-1.5 py-0.5 rounded text-[10px] font-bold ${item.isWK ? 'bg-indigo-600 text-white' : 'bg-slate-100 text-slate-600'}">WK</button>
+            <button onclick="removeFromXI(${index})" class="text-rose-500 hover:text-rose-700 p-1"><i class="fa-solid fa-trash text-[11px]"></i></button>
+          </div>
+        `;
+        xiList.appendChild(row);
+      });
+    }
+
+    function addToXI(id) {
+      if (playingXI.length >= 11) { alert("Playing XI is full (11 players)."); return; }
+      playingXI.push({ id, isCaptain: false, isWK: false });
+      saveState();
+      renderLineupBuilder();
+    }
+    function removeFromXI(idx) { playingXI.splice(idx, 1); saveState(); renderLineupBuilder(); }
+    function movePlayer(idx, dir) {
+      const target = idx + dir;
+      if (target < 0 || target >= playingXI.length) return;
+      const tmp = playingXI[idx]; playingXI[idx] = playingXI[target]; playingXI[target] = tmp;
+      saveState(); renderLineupBuilder();
+    }
+    function toggleCaptain(idx) {
+      playingXI.forEach((p, i) => p.isCaptain = (i === idx ? !p.isCaptain : false));
+      saveState(); renderLineupBuilder();
+    }
+    function toggleWK(idx) {
+      playingXI.forEach((p, i) => p.isWK = (i === idx ? !p.isWK : false));
+      saveState(); renderLineupBuilder();
+    }
+    function resetPlayingXI() { playingXI = []; saveState(); renderLineupBuilder(); }
+
+    // --- 7. MATCH DUES LEDGER ---
+    function populateDuesDropdown() {
+      const select = document.getElementById("duesFixtureSelect");
+      select.innerHTML = fixtures.map(f => `
+        <option value="${f.id}">vs. ${f.opponent} (${f.date})</option>
+      `).join("");
+    }
+
+    function renderDuesTable() {
+      const select = document.getElementById("duesFixtureSelect");
+      const fixtureId = select.value || (fixtures[0] && fixtures[0].id);
+      const fixture = fixtures.find(f => f.id === fixtureId);
+      const container = document.getElementById("duesTableContainer");
+
+      if (!fixture) {
+        container.innerHTML = `<p class="text-xs text-slate-400">No fixtures recorded.</p>`;
+        return;
+      }
+
+      // If no fee applies to this specific match
+      if (!fixture.feeApplicable || fixture.fee === 0) {
+        container.innerHTML = `
+          <div class="py-8 text-center bg-slate-50 rounded-xl border border-dashed border-slate-200">
+            <i class="fa-solid fa-hand-holding-dollar text-slate-300 text-2xl mb-2"></i>
+            <h4 class="text-xs font-bold text-slate-700">No Match Fee Required</h4>
+            <p class="text-[11px] text-slate-400">This fixture is marked as a friendly/practice game with zero dues.</p>
+          </div>
+        `;
+        return;
+      }
+
+      let paidCount = 0;
+      let totalAttending = 0;
+
+      let rowsHtml = players.map(player => {
+        const rsvp = (fixture.rsvps && fixture.rsvps[player.id]) || "unanswered";
+        const isPaid = fixture.dues && fixture.dues[player.id] === "Paid";
+        if (rsvp === "attending") totalAttending++;
+        if (isPaid) paidCount++;
+
+        return `
+          <tr class="border-b border-slate-100 hover:bg-slate-50/50 text-xs">
+            <td class="py-2.5 px-3 font-semibold text-slate-800">${player.name}</td>
+            <td class="py-2.5 px-3 capitalize">
+              <span class="text-[11px] px-2 py-0.5 rounded-full ${rsvp === 'attending' ? 'bg-emerald-50 text-emerald-700 font-medium' : 'text-slate-400'}">${rsvp}</span>
+            </td>
+            <td class="py-2.5 px-3 font-medium text-slate-700">$${fixture.fee}</td>
+            <td class="py-2.5 px-3">
+              <span class="px-2 py-0.5 rounded-full text-[10px] font-bold ${isPaid ? 'bg-emerald-100 text-emerald-800' : 'bg-amber-100 text-amber-800'}">
+                ${isPaid ? 'Paid' : 'Pending'}
+              </span>
+            </td>
+            <td class="py-2.5 px-3 text-right">
+              <button onclick="toggleDue('${fixture.id}', '${player.id}')" class="manager-only px-2 py-1 bg-slate-100 hover:bg-slate-200 rounded text-[11px] text-slate-700 transition">
+                Toggle
+              </button>
+            </td>
+          </tr>
+        `;
+      }).join("");
+
+      container.innerHTML = `
+        <div class="mb-3 flex items-center justify-between text-xs bg-slate-50 p-2.5 rounded-lg">
+          <span class="text-slate-600 font-medium">Collected: <strong>$${paidCount * fixture.fee}</strong></span>
+          <span class="text-slate-500">Paid: <strong>${paidCount} / ${totalAttending}</strong> attending</span>
+        </div>
+        <table class="w-full text-left border-collapse">
+          <thead>
+            <tr class="border-b border-slate-200 bg-slate-50 text-[10px] uppercase font-bold text-slate-500">
+              <th class="py-2 px-3">Player</th>
+              <th class="py-2 px-3">RSVP</th>
+              <th class="py-2 px-3">Fee</th>
+              <th class="py-2 px-3">Status</th>
+              <th class="py-2 px-3 text-right">Action</th>
+            </tr>
+          </thead>
+          <tbody>${rowsHtml}</tbody>
+        </table>
+      `;
+
+      switchPersona(currentPersona);
+    }
+
+    function toggleDue(fixId, playerId) {
+      const fix = fixtures.find(f => f.id === fixId);
+      if (!fix) return;
+      if (!fix.dues) fix.dues = {};
+      fix.dues[playerId] = fix.dues[playerId] === "Paid" ? "Pending" : "Paid";
+      saveState();
+      renderDuesTable();
+    }
+
+    // --- 8. DISCUSSIONS & POLLS ---
+    function renderChat() {
+      const container = document.getElementById("chatMessages");
+      container.innerHTML = "";
+      chatMessages.forEach(msg => {
+        const row = document.createElement("div");
+        row.className = `flex flex-col ${msg.isManager ? 'items-start' : 'items-end'}`;
+        row.innerHTML = `
+          <div class="max-w-xs md:max-w-md p-2.5 rounded-xl ${msg.isManager ? 'bg-slate-100 text-slate-800' : 'bg-blue-600 text-white'}">
+            <div class="flex items-center gap-1.5 mb-0.5 text-[10px] font-bold ${msg.isManager ? 'text-slate-600' : 'text-blue-100'}">
+              <span>${msg.author}</span>
+              <span class="font-normal opacity-60">${msg.time}</span>
+            </div>
+            <p class="leading-relaxed">${msg.text}</p>
+          </div>
+        `;
+        container.appendChild(row);
+      });
+      container.scrollTop = container.scrollHeight;
+    }
+
+    function postChatMessage(event) {
+      event.preventDefault();
+      const input = document.getElementById("chatInput");
+      const text = input.value.trim();
+      if (!text) return;
+
+      const authorName = currentPersona === "manager" ? "Manager" : (players.find(p => p.id === currentPersona)?.name || "Player");
+
+      chatMessages.push({
+        id: "c_" + Date.now(),
+        author: authorName,
+        text: text,
+        time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+        isManager: currentPersona === "manager"
+      });
+
+      input.value = "";
+      saveState();
+      renderChat();
+    }
+
+    function renderPolls() {
+      const container = document.getElementById("pollsContainer");
+      container.innerHTML = "";
+      polls.forEach(poll => {
+        const total = poll.options.reduce((s, o) => s + o.votes, 0);
+        const card = document.createElement("div");
+        card.className = "p-3 rounded-lg border border-slate-100 bg-slate-50 space-y-2 text-xs";
+
+        let optionsHtml = poll.options.map((opt, idx) => {
+          const pct = total > 0 ? Math.round((opt.votes / total) * 100) : 0;
+          return `
+            <div class="space-y-1">
+              <div class="flex justify-between text-[11px] font-medium text-slate-700">
+                <span>${opt.text}</span>
+                <span class="text-slate-400">${opt.votes} (${pct}%)</span>
+              </div>
+              <div class="w-full h-1.5 bg-slate-200 rounded-full overflow-hidden">
+                <div class="bg-blue-600 h-full" style="width: ${pct}%"></div>
+              </div>
+              <button onclick="votePoll('${poll.id}', ${idx})" class="text-[10px] text-blue-600 hover:underline">Vote</button>
+            </div>
+          `;
+        }).join("");
+
+        card.innerHTML = `<h4 class="font-semibold text-slate-800">${poll.question}</h4>${optionsHtml}`;
+        container.appendChild(card);
+      });
+    }
+
+    function votePoll(pollId, idx) {
+      const poll = polls.find(p => p.id === pollId);
+      if (!poll) return;
+      poll.options[idx].votes += 1;
+      saveState();
+      renderPolls();
+    }
+
+    function createPoll(event) {
+      event.preventDefault();
+      polls.unshift({
+        id: "poll_" + Date.now(),
+        question: document.getElementById("pollQuestion").value,
+        options: [
+          { text: document.getElementById("pollOpt1").value, votes: 0 },
+          { text: document.getElementById("pollOpt2").value, votes: 0 }
+        ]
+      });
+      saveState();
+      closeModal("addPollModal");
+      renderPolls();
+    }
+
+    // --- 9. SQUAD ROSTER ---
+    function renderRoster() {
+      const container = document.getElementById("rosterList");
+      container.innerHTML = "";
+      players.forEach(p => {
+        const card = document.createElement("div");
+        card.className = "bg-white p-3.5 rounded-xl border border-slate-200 shadow-2xs text-xs space-y-0.5";
+        card.innerHTML = `
+          <h4 class="font-bold text-slate-900">${p.name}</h4>
+          <p class="text-blue-600 font-medium text-[11px]">${p.role}</p>
+          <div class="text-[11px] text-slate-400 pt-1">
+            <span>${p.bat} Bat</span> • <span>${p.bowl}</span>
+          </div>
+        `;
+        container.appendChild(card);
+      });
+    }
+
+    function createPlayer(event) {
+      event.preventDefault();
+      players.push({
+        id: "p_" + Date.now(),
+        name: document.getElementById("playerNameInput").value,
+        role: document.getElementById("playerRoleInput").value,
+        bat: document.getElementById("playerBatInput").value,
+        bowl: document.getElementById("playerBowlInput").value
+      });
+      saveState();
+      closeModal("addPlayerModal");
+      renderRoster();
+    }
+
+    // --- 10. MODAL UTILITIES ---
+    function openModal(id) {
+      if (id === "settingsModal") {
+        document.getElementById("globalDefaultFee").value = config.defaultMatchFee || 20;
+      }
+      if (id === "addFixtureModal") {
+        document.getElementById("fixFeeAmount").value = config.defaultMatchFee || 20;
+      }
+      document.getElementById(id).classList.remove("hidden");
+    }
+    function closeModal(id) { document.getElementById(id).classList.add("hidden"); }
+
+    function openMatchReportModal(fixtureId) {
+      document.getElementById("reportFixtureId").value = fixtureId;
+      const potmSelect = document.getElementById("potmSelect");
+      potmSelect.innerHTML = players.map(p => `<option value="${p.name}">${p.name} (${p.role})</option>`).join("");
+      openModal("matchReportModal");
+    }
+
+    function saveMatchReport(event) {
+      event.preventDefault();
+      const fixtureId = document.getElementById("reportFixtureId").value;
+      const fixture = fixtures.find(f => f.id === fixtureId);
+      if (!fixture) return;
+
+      fixture.status = "Completed";
+      fixture.report = {
+        ourScore: document.getElementById("ourScore").value,
+        opponentScore: document.getElementById("opponentScore").value,
+        result: document.getElementById("matchResult").value,
+        potm: document.getElementById("potmSelect").value,
+        notes: document.getElementById("matchNotes").value
+      };
+
+      saveState();
+      closeModal("matchReportModal");
+      renderFixtures();
+    }
+
+    // Initialize application
+    renderFixtures();
+  </script>
+</body>
+</html>

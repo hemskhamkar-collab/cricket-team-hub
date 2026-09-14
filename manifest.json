@@ -1,0 +1,15 @@
+{
+  "name": "Cricket Team Hub",
+  "short_name": "CricketHub",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "background_color": "#0f172a",
+  "theme_color": "#0f172a",
+  "icons": [
+    {
+      "src": "https://cdn-icons-png.flaticon.com/512/1041/1041049.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}
