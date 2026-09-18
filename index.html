@@ -18,24 +18,13 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
-  <!-- FontAwesome Icons -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
 
   <style>
-    body {
-      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-    }
-    .tab-active {
-      color: #2563eb !important;
-      border-color: #2563eb !important;
-    }
-    /* Smooth card hover transitions */
-    .card-transition {
-      transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-    }
-    .card-transition:hover {
-      transform: translateY(-1px);
-    }
+    body { font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif; }
+    .tab-active { color: #2563eb !important; border-color: #2563eb !important; }
+    .card-transition { transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1); }
+    .card-transition:hover { transform: translateY(-1px); }
   </style>
 </head>
 <body class="bg-slate-50 text-slate-800 min-h-screen flex flex-col antialiased">
@@ -43,8 +32,6 @@
   <!-- ==================== TOP NAVIGATION ==================== -->
   <header class="bg-white border-b border-slate-200 sticky top-0 z-40 shadow-xs">
     <div class="max-w-6xl mx-auto px-4 py-3 flex flex-wrap items-center justify-between gap-4">
-      
-      <!-- Brand & Icon -->
       <div class="flex items-center gap-3">
         <div class="w-9 h-9 rounded-xl bg-gradient-to-tr from-blue-700 to-indigo-600 flex items-center justify-center text-white shadow-sm">
           <i class="fa-solid fa-baseball-bat-ball text-sm"></i>
@@ -55,13 +42,14 @@
         </div>
       </div>
 
-      <!-- Controls: Club Settings & Persona Selector -->
       <div class="flex items-center gap-2">
+        <button onclick="clearAppCache()" class="text-[11px] text-slate-400 hover:text-rose-600 px-2 py-1 transition" title="Reset local cache to defaults">
+          <i class="fa-solid fa-rotate text-xs mr-1"></i>Reset
+        </button>
         <button onclick="openModal('settingsModal')" class="manager-only px-2.5 py-1.5 text-xs font-medium text-slate-600 bg-slate-100 hover:bg-slate-200 rounded-lg flex items-center gap-1.5 transition">
           <i class="fa-solid fa-gear text-slate-500"></i>
           <span class="hidden sm:inline">Club Settings</span>
         </button>
-
         <div class="flex items-center gap-1.5 bg-slate-100 px-2.5 py-1 rounded-lg border border-slate-200">
           <i class="fa-regular fa-circle-user text-slate-500 text-xs"></i>
           <select id="personaSelect" onchange="switchPersona(this.value)" class="bg-transparent text-xs font-medium text-slate-700 outline-none cursor-pointer">
@@ -72,7 +60,6 @@
           </select>
         </div>
       </div>
-
     </div>
 
     <!-- Navigation Sub-bar -->
@@ -109,10 +96,7 @@
           <i class="fa-solid fa-plus text-xs"></i> New Fixture
         </button>
       </div>
-
-      <div id="fixturesList" class="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <!-- Injected via JavaScript -->
-      </div>
+      <div id="fixturesList" class="grid grid-cols-1 md:grid-cols-2 gap-4"></div>
     </section>
 
     <!-- ==================== TAB 2: PLAYING XI BUILDER ==================== -->
@@ -129,7 +113,6 @@
       </div>
 
       <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 items-start">
-        <!-- Player Pool -->
         <div class="bg-white rounded-xl border border-slate-200 p-4 shadow-xs space-y-3">
           <div class="flex items-center justify-between border-b border-slate-100 pb-2.5">
             <span class="text-xs font-bold uppercase tracking-wider text-slate-500">Available Squad Pool</span>
@@ -138,7 +121,6 @@
           <div id="playerPoolList" class="space-y-1.5 max-h-[500px] overflow-y-auto pr-1"></div>
         </div>
 
-        <!-- Selected Lineup -->
         <div class="bg-white rounded-xl border border-slate-200 p-4 shadow-xs space-y-3">
           <div class="flex items-center justify-between border-b border-slate-100 pb-2.5">
             <div class="flex items-center gap-2">
@@ -162,22 +144,16 @@
           </div>
           <div class="flex items-center gap-2">
             <label for="duesFixtureSelect" class="text-xs font-medium text-slate-500">Fixture:</label>
-            <select id="duesFixtureSelect" onchange="renderDuesTable()" class="text-xs bg-slate-50 border border-slate-200 rounded-lg px-2.5 py-1.5 font-medium text-slate-700 outline-none">
-              <!-- Populated by JavaScript -->
-            </select>
+            <select id="duesFixtureSelect" onchange="renderDuesTable()" class="text-xs bg-slate-50 border border-slate-200 rounded-lg px-2.5 py-1.5 font-medium text-slate-700 outline-none"></select>
           </div>
         </div>
-
-        <div id="duesTableContainer" class="overflow-x-auto">
-          <!-- Rendered dynamically -->
-        </div>
+        <div id="duesTableContainer" class="overflow-x-auto"></div>
       </div>
     </section>
 
     <!-- ==================== TAB 4: DISCUSSIONS & POLLS ==================== -->
     <section id="view-community" class="hidden space-y-4">
       <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
-        <!-- Team Polls -->
         <div class="lg:col-span-1 bg-white rounded-xl border border-slate-200 p-4 shadow-xs space-y-3">
           <div class="flex items-center justify-between border-b border-slate-100 pb-2.5">
             <span class="text-xs font-bold uppercase tracking-wider text-slate-500">Quick Match Polls</span>
@@ -186,7 +162,6 @@
           <div id="pollsContainer" class="space-y-3"></div>
         </div>
 
-        <!-- Chat Stream -->
         <div class="lg:col-span-2 bg-white rounded-xl border border-slate-200 shadow-xs flex flex-col h-[520px]">
           <div class="p-3.5 border-b border-slate-100 flex items-center justify-between bg-slate-50/50 rounded-t-xl">
             <div class="flex items-center gap-2">
@@ -195,9 +170,7 @@
             </div>
             <span class="text-[11px] text-slate-400 font-medium">Real-time discussion</span>
           </div>
-
           <div id="chatMessages" class="flex-1 p-4 overflow-y-auto space-y-2.5 text-xs"></div>
-
           <form onsubmit="postChatMessage(event)" class="p-2.5 border-t border-slate-100 flex gap-2 bg-white rounded-b-xl">
             <input type="text" id="chatInput" placeholder="Share an update, carpool note, or pitch report..." required class="flex-1 text-xs bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 outline-none focus:border-blue-500" />
             <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white px-3 py-2 rounded-lg text-xs font-semibold transition">
@@ -226,7 +199,7 @@
 
   <!-- ==================== MODALS ==================== -->
 
-  <!-- Modal: Club Settings (Configurable default match fee) -->
+  <!-- Modal: Club Settings -->
   <div id="settingsModal" class="hidden fixed inset-0 bg-slate-900/40 backdrop-blur-xs flex items-center justify-center p-4 z-50">
     <div class="bg-white rounded-xl max-w-sm w-full p-5 shadow-lg border border-slate-200">
       <div class="flex items-center justify-between mb-3 border-b border-slate-100 pb-2">
@@ -285,7 +258,6 @@
           </div>
         </div>
 
-        <!-- Configurable Match Fee Option for this match -->
         <div class="p-3 bg-slate-50 border border-slate-200 rounded-lg space-y-2">
           <label class="inline-flex items-center gap-2 cursor-pointer">
             <input type="checkbox" id="fixFeeApplicable" onchange="toggleFeeInputVisibility()" checked class="rounded text-blue-600 focus:ring-0" />
@@ -411,10 +383,7 @@
 
   <!-- ==================== JAVASCRIPT APP LOGIC ==================== -->
   <script>
-    // --- 1. DEFAULT DATA STRUCTURES ---
-    const DEFAULT_CONFIG = {
-      defaultMatchFee: 20
-    };
+    const DEFAULT_CONFIG = { defaultMatchFee: 20 };
 
     const DEFAULT_PLAYERS = [
       { id: "p1", name: "Hemant Khamkar", role: "All-Rounder", bat: "Right", bowl: "Right-arm Medium" },
@@ -457,7 +426,7 @@
         time: "06:00 PM",
         format: "Practice Match",
         venue: "Ground B Nets",
-        feeApplicable: false, // Match fee NOT applied here
+        feeApplicable: false,
         fee: 0,
         status: "Upcoming",
         rsvps: { "p1": "attending", "p2": "attending", "p3": "attending" },
@@ -502,25 +471,40 @@
       { id: "c2", author: "Hemant", text: "Got it, confirmed RSVP!", time: "11:00 AM", isManager: false }
     ];
 
-    // --- 2. LOCALSTORAGE INITIALIZATION ---
-    let config = JSON.parse(localStorage.getItem("cricket_config")) || DEFAULT_CONFIG;
-    let players = JSON.parse(localStorage.getItem("cricket_players")) || DEFAULT_PLAYERS;
-    let fixtures = JSON.parse(localStorage.getItem("cricket_fixtures")) || DEFAULT_FIXTURES;
-    let polls = JSON.parse(localStorage.getItem("cricket_polls")) || DEFAULT_POLLS;
-    let chatMessages = JSON.parse(localStorage.getItem("cricket_chats")) || DEFAULT_CHATS;
-    let playingXI = JSON.parse(localStorage.getItem("cricket_playingXI")) || [
-      { id: "p1", isCaptain: true, isWK: false },
-      { id: "p2", isCaptain: false, isWK: false },
-      { id: "p4", isCaptain: false, isWK: true },
-      { id: "p5", isCaptain: false, isWK: false },
-      { id: "p6", isCaptain: false, isWK: false },
-      { id: "p10", isCaptain: false, isWK: false },
-      { id: "p12", isCaptain: false, isWK: false },
-      { id: "p3", isCaptain: false, isWK: false },
-      { id: "p7", isCaptain: false, isWK: false },
-      { id: "p9", isCaptain: false, isWK: false },
-      { id: "p11", isCaptain: false, isWK: false }
-    ];
+    // Data Load & Self-Healing Migration
+    let config, players, fixtures, polls, chatMessages, playingXI;
+
+    try {
+      config = JSON.parse(localStorage.getItem("cricket_config")) || DEFAULT_CONFIG;
+      players = JSON.parse(localStorage.getItem("cricket_players")) || DEFAULT_PLAYERS;
+      fixtures = JSON.parse(localStorage.getItem("cricket_fixtures")) || DEFAULT_FIXTURES;
+      polls = JSON.parse(localStorage.getItem("cricket_polls")) || DEFAULT_POLLS;
+      chatMessages = JSON.parse(localStorage.getItem("cricket_chats")) || DEFAULT_CHATS;
+      playingXI = JSON.parse(localStorage.getItem("cricket_playingXI")) || [
+        { id: "p1", isCaptain: true, isWK: false },
+        { id: "p2", isCaptain: false, isWK: false },
+        { id: "p4", isCaptain: false, isWK: true },
+        { id: "p5", isCaptain: false, isWK: false },
+        { id: "p6", isCaptain: false, isWK: false },
+        { id: "p10", isCaptain: false, isWK: false },
+        { id: "p12", isCaptain: false, isWK: false },
+        { id: "p3", isCaptain: false, isWK: false },
+        { id: "p7", isCaptain: false, isWK: false },
+        { id: "p9", isCaptain: false, isWK: false },
+        { id: "p11", isCaptain: false, isWK: false }
+      ];
+
+      // Sanitize fixtures to prevent render crashes on stale data
+      fixtures.forEach(f => {
+        if (typeof f.feeApplicable === "undefined") f.feeApplicable = Boolean(f.fee && f.fee > 0);
+        if (typeof f.fee === "undefined") f.fee = 0;
+        if (!f.rsvps) f.rsvps = {};
+        if (!f.dues) f.dues = {};
+      });
+    } catch (e) {
+      console.error("Storage corrupted. Resetting to defaults.", e);
+      clearAppCache();
+    }
 
     let currentPersona = "manager";
 
@@ -533,22 +517,35 @@
       localStorage.setItem("cricket_playingXI", JSON.stringify(playingXI));
     }
 
-    // --- 3. TAB & PERSONA NAVIGATION ---
+    function clearAppCache() {
+      localStorage.removeItem("cricket_config");
+      localStorage.removeItem("cricket_players");
+      localStorage.removeItem("cricket_fixtures");
+      localStorage.removeItem("cricket_polls");
+      localStorage.removeItem("cricket_chats");
+      localStorage.removeItem("cricket_playingXI");
+      location.reload();
+    }
+
+    // Tab Navigation
     function switchTab(tabId) {
       ["fixtures", "lineup", "dues", "community", "roster"].forEach(tab => {
         const viewEl = document.getElementById(`view-${tab}`);
         const tabEl = document.getElementById(`tab-${tab}`);
-        if (tab === tabId) {
-          viewEl.classList.remove("hidden");
-          tabEl.classList.add("tab-active");
-        } else {
-          viewEl.classList.add("hidden");
-          tabEl.classList.remove("tab-active");
+        if (viewEl && tabEl) {
+          if (tab === tabId) {
+            viewEl.classList.remove("hidden");
+            tabEl.classList.add("tab-active");
+          } else {
+            viewEl.classList.add("hidden");
+            tabEl.classList.remove("tab-active");
+          }
         }
       });
       renderCurrentTab(tabId);
     }
 
+    // Role Persona Switcher (Fixed recursion bug)
     function switchPersona(val) {
       currentPersona = val;
       const managerElements = document.querySelectorAll(".manager-only");
@@ -571,29 +568,28 @@
       if (tabId === "roster") renderRoster();
     }
 
-    // --- 4. CLUB SETTINGS & CONFIGURATION ---
+    // Club Settings
     function saveClubSettings(event) {
       event.preventDefault();
       const newFee = parseFloat(document.getElementById("globalDefaultFee").value) || 0;
       config.defaultMatchFee = newFee;
       saveState();
       closeModal("settingsModal");
-      alert("Club settings saved!");
     }
 
     function toggleFeeInputVisibility() {
       const isFeeChecked = document.getElementById("fixFeeApplicable").checked;
       const feeInputContainer = document.getElementById("feeInputContainer");
-      if (isFeeChecked) {
-        feeInputContainer.classList.remove("hidden");
-      } else {
-        feeInputContainer.classList.add("hidden");
+      if (feeInputContainer) {
+        if (isFeeChecked) feeInputContainer.classList.remove("hidden");
+        else feeInputContainer.classList.add("hidden");
       }
     }
 
-    // --- 5. FIXTURES & RSVPs RENDERING ---
+    // Fixtures & RSVPs
     function renderFixtures() {
       const container = document.getElementById("fixturesList");
+      if (!container) return;
       container.innerHTML = "";
 
       fixtures.forEach(fixture => {
@@ -606,21 +602,19 @@
         });
 
         const myStatus = currentPersona !== "manager" ? (rsvps[currentPersona] || "unanswered") : null;
+        const feeIsApplicable = Boolean(fixture.feeApplicable && fixture.fee > 0);
 
         const card = document.createElement("div");
         card.className = "bg-white rounded-xl border border-slate-200 p-4 shadow-xs card-transition space-y-3.5";
 
         card.innerHTML = `
-          <!-- Header -->
           <div class="flex items-start justify-between gap-3">
             <div>
               <div class="flex items-center gap-1.5 flex-wrap">
                 <span class="text-[10px] font-bold px-2 py-0.5 rounded-full ${fixture.status === 'Completed' ? 'bg-slate-100 text-slate-700' : 'bg-blue-50 text-blue-700'}">
-                  ${fixture.format}
+                  ${fixture.format || 'Match'}
                 </span>
-
-                <!-- Configurable Fee Badge -->
-                ${fixture.feeApplicable ? `
+                ${feeIsApplicable ? `
                   <span class="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700">
                     Fee: $${fixture.fee}
                   </span>
@@ -638,29 +632,25 @@
                 <i class="fa-solid fa-location-dot text-slate-400"></i> ${fixture.venue}
               </p>
             </div>
-
-            <!-- Match Outcome / Report Button -->
             <div>
               ${fixture.report ? `
                 <span class="text-[11px] font-bold px-2.5 py-1 rounded-lg bg-emerald-100 text-emerald-800">
                   ${fixture.report.result}
                 </span>
               ` : `
-                <button onclick="openMatchReportModal('${fixture.id}')" class="manager-only text-[11px] font-medium text-slate-600 bg-slate-100 hover:bg-slate-200 px-2.5 py-1 rounded-lg transition border border-slate-200">
+                <button onclick="openMatchReportModal('${fixture.id}')" class="manager-only text-[11px] font-medium text-slate-600 bg-slate-100 hover:bg-slate-200 px-2.5 py-1 rounded-lg transition border border-slate-200 ${currentPersona !== 'manager' ? 'hidden' : ''}">
                   Summary
                 </button>
               `}
             </div>
           </div>
 
-          <!-- Attendance Stats Bar -->
           <div class="grid grid-cols-3 gap-1 bg-slate-50 p-2 rounded-lg text-center text-[11px] border border-slate-100">
             <div><span class="font-bold text-emerald-600">${attending}</span> <span class="text-slate-400">Yes</span></div>
             <div><span class="font-bold text-amber-500">${tentative}</span> <span class="text-slate-400">Maybe</span></div>
             <div><span class="font-bold text-rose-500">${declined}</span> <span class="text-slate-400">No</span></div>
           </div>
 
-          <!-- Match Report Card (Completed) -->
           ${fixture.report ? `
             <div class="p-2.5 bg-slate-50 rounded-lg border border-slate-100 text-[11px] space-y-1">
               <div class="flex justify-between font-medium text-slate-700">
@@ -671,7 +661,6 @@
             </div>
           ` : ''}
 
-          <!-- Player RSVP Controls -->
           ${currentPersona !== "manager" ? `
             <div class="flex items-center justify-between pt-2 border-t border-slate-100 text-xs">
               <span class="text-[11px] text-slate-500 font-medium">Your RSVP: <strong class="uppercase text-blue-600">${myStatus}</strong></span>
@@ -685,8 +674,6 @@
         `;
         container.appendChild(card);
       });
-
-      switchPersona(currentPersona);
     }
 
     function createFixture(event) {
@@ -724,13 +711,15 @@
       renderFixtures();
     }
 
-    // --- 6. PLAYING XI BUILDER ---
+    // Lineup Builder
     function renderLineupBuilder() {
-      const filterAttending = document.getElementById("filterAttendingOnly").checked;
+      const filterEl = document.getElementById("filterAttendingOnly");
+      const filterAttending = filterEl ? filterEl.checked : false;
       const activeFixture = fixtures[0];
 
       const poolList = document.getElementById("playerPoolList");
       const xiList = document.getElementById("playingXIList");
+      if (!poolList || !xiList) return;
       poolList.innerHTML = "";
       xiList.innerHTML = "";
 
@@ -810,9 +799,10 @@
     }
     function resetPlayingXI() { playingXI = []; saveState(); renderLineupBuilder(); }
 
-    // --- 7. MATCH DUES LEDGER ---
+    // Dues Ledger
     function populateDuesDropdown() {
       const select = document.getElementById("duesFixtureSelect");
+      if (!select) return;
       select.innerHTML = fixtures.map(f => `
         <option value="${f.id}">vs. ${f.opponent} (${f.date})</option>
       `).join("");
@@ -820,17 +810,19 @@
 
     function renderDuesTable() {
       const select = document.getElementById("duesFixtureSelect");
-      const fixtureId = select.value || (fixtures[0] && fixtures[0].id);
-      const fixture = fixtures.find(f => f.id === fixtureId);
       const container = document.getElementById("duesTableContainer");
+      if (!container) return;
+
+      const fixtureId = select && select.value ? select.value : (fixtures[0] && fixtures[0].id);
+      const fixture = fixtures.find(f => f.id === fixtureId);
 
       if (!fixture) {
         container.innerHTML = `<p class="text-xs text-slate-400">No fixtures recorded.</p>`;
         return;
       }
 
-      // If no fee applies to this specific match
-      if (!fixture.feeApplicable || fixture.fee === 0) {
+      const feeIsApplicable = Boolean(fixture.feeApplicable && fixture.fee > 0);
+      if (!feeIsApplicable) {
         container.innerHTML = `
           <div class="py-8 text-center bg-slate-50 rounded-xl border border-dashed border-slate-200">
             <i class="fa-solid fa-hand-holding-dollar text-slate-300 text-2xl mb-2"></i>
@@ -863,7 +855,7 @@
               </span>
             </td>
             <td class="py-2.5 px-3 text-right">
-              <button onclick="toggleDue('${fixture.id}', '${player.id}')" class="manager-only px-2 py-1 bg-slate-100 hover:bg-slate-200 rounded text-[11px] text-slate-700 transition">
+              <button onclick="toggleDue('${fixture.id}', '${player.id}')" class="manager-only px-2 py-1 bg-slate-100 hover:bg-slate-200 rounded text-[11px] text-slate-700 transition ${currentPersona !== 'manager' ? 'hidden' : ''}">
                 Toggle
               </button>
             </td>
@@ -889,8 +881,6 @@
           <tbody>${rowsHtml}</tbody>
         </table>
       `;
-
-      switchPersona(currentPersona);
     }
 
     function toggleDue(fixId, playerId) {
@@ -902,9 +892,10 @@
       renderDuesTable();
     }
 
-    // --- 8. DISCUSSIONS & POLLS ---
+    // Community / Chat / Polls
     function renderChat() {
       const container = document.getElementById("chatMessages");
+      if (!container) return;
       container.innerHTML = "";
       chatMessages.forEach(msg => {
         const row = document.createElement("div");
@@ -946,6 +937,7 @@
 
     function renderPolls() {
       const container = document.getElementById("pollsContainer");
+      if (!container) return;
       container.innerHTML = "";
       polls.forEach(poll => {
         const total = poll.options.reduce((s, o) => s + o.votes, 0);
@@ -996,9 +988,10 @@
       renderPolls();
     }
 
-    // --- 9. SQUAD ROSTER ---
+    // Roster
     function renderRoster() {
       const container = document.getElementById("rosterList");
+      if (!container) return;
       container.innerHTML = "";
       players.forEach(p => {
         const card = document.createElement("div");
@@ -1028,7 +1021,7 @@
       renderRoster();
     }
 
-    // --- 10. MODAL UTILITIES ---
+    // Modal Helpers
     function openModal(id) {
       if (id === "settingsModal") {
         document.getElementById("globalDefaultFee").value = config.defaultMatchFee || 20;
@@ -1067,7 +1060,7 @@
       renderFixtures();
     }
 
-    // Initialize application
+    // Initial load
     renderFixtures();
   </script>
 </body>
