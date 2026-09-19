@@ -13,7 +13,7 @@
   <meta name="theme-color" content="#0f172a" />
   <link rel="manifest" href="manifest.json" />
 
-  <!-- Tailwind CSS & Inter Font -->
+  <!-- Tailwind CSS & Fonts -->
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -68,7 +68,10 @@
         <i class="fa-regular fa-calendar-check"></i> Fixtures & RSVPs
       </button>
       <button onclick="switchTab('lineup')" id="tab-lineup" class="py-2.5 border-b-2 border-transparent hover:text-slate-900 flex items-center gap-1.5 transition">
-        <i class="fa-solid fa-users-viewfinder"></i> Playing XI Builder
+        <i class="fa-solid fa-users-viewfinder"></i> Playing XI & 12th Man
+      </button>
+      <button onclick="switchTab('stats')" id="tab-stats" class="py-2.5 border-b-2 border-transparent hover:text-slate-900 flex items-center gap-1.5 transition">
+        <i class="fa-solid fa-chart-pie"></i> Participation & Duties
       </button>
       <button onclick="switchTab('dues')" id="tab-dues" class="py-2.5 border-b-2 border-transparent hover:text-slate-900 flex items-center gap-1.5 transition">
         <i class="fa-solid fa-receipt"></i> Match Dues
@@ -82,15 +85,15 @@
     </div>
   </header>
 
-  <!-- ==================== MAIN APPLICATION CONTAINER ==================== -->
+  <!-- ==================== MAIN CONTAINER ==================== -->
   <main class="max-w-6xl mx-auto p-4 sm:p-6 flex-1 w-full space-y-6">
 
-    <!-- ==================== TAB 1: FIXTURES & RSVPs ==================== -->
+    <!-- ==================== TAB 1: FIXTURES ==================== -->
     <section id="view-fixtures" class="space-y-4">
       <div class="flex items-center justify-between">
         <div>
           <h2 class="text-lg font-bold text-slate-900">Matches & Attendance</h2>
-          <p class="text-xs text-slate-500">View upcoming fixtures, submit availability, and review match outcomes.</p>
+          <p class="text-xs text-slate-500">Upcoming fixtures, RSVP responses, and automated availability reminders.</p>
         </div>
         <button onclick="openModal('addFixtureModal')" class="manager-only px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold rounded-lg shadow-xs flex items-center gap-1.5 transition">
           <i class="fa-solid fa-plus text-xs"></i> New Fixture
@@ -99,13 +102,25 @@
       <div id="fixturesList" class="grid grid-cols-1 md:grid-cols-2 gap-4"></div>
     </section>
 
-    <!-- ==================== TAB 2: PLAYING XI BUILDER ==================== -->
+    <!-- ==================== TAB 2: PLAYING XI & IMPACT PLAYER ==================== -->
     <section id="view-lineup" class="hidden space-y-4">
-      <div class="flex flex-wrap items-center justify-between gap-3">
+      <div class="bg-white rounded-xl border border-slate-200 p-4 shadow-xs flex flex-wrap items-center justify-between gap-4">
         <div>
-          <h2 class="text-lg font-bold text-slate-900">Match Day Playing XI</h2>
-          <p class="text-xs text-slate-500">Pick starting players, reorder batting order, and appoint Captain & Wicketkeeper.</p>
+          <h2 class="text-base font-bold text-slate-900">Match Playing XI & 12th Man / Impact Player</h2>
+          <p class="text-xs text-slate-500">Pick starting XI, assign Impact Player, and generate the match announcement.</p>
         </div>
+        <div class="flex items-center gap-3">
+          <div class="flex items-center gap-1.5">
+            <label for="lineupFixtureSelect" class="text-xs font-medium text-slate-500">Select Match:</label>
+            <select id="lineupFixtureSelect" onchange="onLineupFixtureChange()" class="text-xs bg-slate-50 border border-slate-200 rounded-lg px-2.5 py-1.5 font-semibold text-slate-800 outline-none"></select>
+          </div>
+          <button onclick="openWhatsAppModal()" class="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold rounded-lg shadow-xs flex items-center gap-1.5 transition">
+            <i class="fa-brands fa-whatsapp text-sm"></i> Share XI on WhatsApp
+          </button>
+        </div>
+      </div>
+
+      <div class="flex items-center justify-between px-1">
         <label class="inline-flex items-center gap-2 text-xs font-medium text-slate-700 cursor-pointer bg-white px-3 py-1.5 rounded-lg border border-slate-200">
           <input type="checkbox" id="filterAttendingOnly" onchange="renderLineupBuilder()" class="rounded text-blue-600 focus:ring-0" checked />
           <span>Show Confirmed Attendees Only</span>
@@ -118,23 +133,46 @@
             <span class="text-xs font-bold uppercase tracking-wider text-slate-500">Available Squad Pool</span>
             <span id="poolCount" class="text-[11px] font-semibold text-slate-600 bg-slate-100 px-2 py-0.5 rounded-full">0</span>
           </div>
-          <div id="playerPoolList" class="space-y-1.5 max-h-[500px] overflow-y-auto pr-1"></div>
+          <div id="playerPoolList" class="space-y-1.5 max-h-[520px] overflow-y-auto pr-1"></div>
         </div>
 
-        <div class="bg-white rounded-xl border border-slate-200 p-4 shadow-xs space-y-3">
-          <div class="flex items-center justify-between border-b border-slate-100 pb-2.5">
-            <div class="flex items-center gap-2">
-              <span class="text-xs font-bold uppercase tracking-wider text-slate-500">Batting Lineup</span>
-              <span id="xiCount" class="text-xs font-bold px-2 py-0.5 rounded-full bg-blue-50 text-blue-700">0 / 11</span>
+        <div class="space-y-4">
+          <div class="bg-purple-50/60 border border-purple-200 rounded-xl p-3.5 shadow-xs">
+            <div class="flex items-center justify-between mb-2">
+              <span class="text-xs font-bold uppercase tracking-wider text-purple-900 flex items-center gap-1.5">
+                <i class="fa-solid fa-bolt text-purple-600"></i> Impact Player / 12th Man
+              </span>
+              <span id="impactBadge" class="text-[10px] font-bold px-2 py-0.5 rounded bg-purple-200 text-purple-800">Optional</span>
             </div>
-            <button onclick="resetPlayingXI()" class="text-xs text-rose-600 hover:underline font-medium">Clear XI</button>
+            <div id="impactPlayerSlot"></div>
           </div>
-          <div id="playingXIList" class="space-y-1.5 min-h-[300px]"></div>
+
+          <div class="bg-white rounded-xl border border-slate-200 p-4 shadow-xs space-y-3">
+            <div class="flex items-center justify-between border-b border-slate-100 pb-2.5">
+              <div class="flex items-center gap-2">
+                <span class="text-xs font-bold uppercase tracking-wider text-slate-500">Playing XI Batting Order</span>
+                <span id="xiCount" class="text-xs font-bold px-2 py-0.5 rounded-full bg-blue-50 text-blue-700">0 / 11</span>
+              </div>
+              <button onclick="resetPlayingXI()" class="text-xs text-rose-600 hover:underline font-medium">Clear XI</button>
+            </div>
+            <div id="playingXIList" class="space-y-1.5 min-h-[260px]"></div>
+          </div>
         </div>
       </div>
     </section>
 
-    <!-- ==================== TAB 3: MATCH DUES & LEDGER ==================== -->
+    <!-- ==================== TAB 3: PARTICIPATION & DUTIES ==================== -->
+    <section id="view-stats" class="hidden space-y-4">
+      <div class="bg-white rounded-xl border border-slate-200 p-5 shadow-xs space-y-4">
+        <div class="border-b border-slate-100 pb-3">
+          <h2 class="text-lg font-bold text-slate-900">Player Availability & Selection Ledger</h2>
+          <p class="text-xs text-slate-500">Transparent season metrics: confirmed availability rate, starting XI selection ratio, and completed 12th man / impact duties.</p>
+        </div>
+        <div id="participationLedgerContainer" class="overflow-x-auto"></div>
+      </div>
+    </section>
+
+    <!-- ==================== TAB 4: MATCH DUES & LEDGER ==================== -->
     <section id="view-dues" class="hidden space-y-4">
       <div class="bg-white rounded-xl border border-slate-200 p-5 shadow-xs space-y-4">
         <div class="flex flex-wrap items-center justify-between gap-3 border-b border-slate-100 pb-4">
@@ -151,7 +189,7 @@
       </div>
     </section>
 
-    <!-- ==================== TAB 4: DISCUSSIONS & POLLS ==================== -->
+    <!-- ==================== TAB 5: DISCUSSIONS & POLLS ==================== -->
     <section id="view-community" class="hidden space-y-4">
       <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
         <div class="lg:col-span-1 bg-white rounded-xl border border-slate-200 p-4 shadow-xs space-y-3">
@@ -181,7 +219,7 @@
       </div>
     </section>
 
-    <!-- ==================== TAB 5: SQUAD ROSTER ==================== -->
+    <!-- ==================== TAB 6: SQUAD ROSTER ==================== -->
     <section id="view-roster" class="hidden space-y-4">
       <div class="flex items-center justify-between">
         <div>
@@ -199,6 +237,193 @@
 
   <!-- ==================== MODALS ==================== -->
 
+  <!-- Modal: Schedule Availability Reminder (For Unanswered Players) -->
+  <div id="reminderModal" class="hidden fixed inset-0 bg-slate-900/40 backdrop-blur-xs flex items-center justify-center p-4 z-50">
+    <div class="bg-white rounded-xl max-w-md w-full p-5 shadow-lg border border-slate-200">
+      <div class="flex items-center justify-between mb-3 border-b border-slate-100 pb-2">
+        <h3 class="text-sm font-bold text-slate-900 flex items-center gap-2">
+          <i class="fa-solid fa-bell text-amber-500"></i> Availability Reminder Engine
+        </h3>
+        <button onclick="closeModal('reminderModal')" class="text-slate-400 hover:text-slate-600 text-xs"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+
+      <div class="space-y-3.5 text-xs">
+        <!-- Target Info -->
+        <div class="p-2.5 bg-amber-50/80 rounded-lg border border-amber-200 text-amber-900">
+          <div class="flex items-center justify-between font-bold text-xs mb-1">
+            <span id="reminderMatchTitle">Match: vs. Opponent</span>
+            <span id="reminderPendingBadge" class="bg-amber-200 text-amber-900 px-2 py-0.5 rounded text-[10px]">0 Pending</span>
+          </div>
+          <p class="text-[11px] text-amber-800" id="reminderPendingList">Targeting unanswered players...</p>
+        </div>
+
+        <!-- Option A: Instant WhatsApp Broadcast -->
+        <div class="space-y-1.5">
+          <label class="block font-bold text-slate-800">1. Instant WhatsApp Nudge (To Unanswered Players)</label>
+          <div id="reminderWhatsAppPreview" class="p-2.5 bg-slate-100 rounded-lg border border-slate-200 text-slate-700 font-mono text-[10px] whitespace-pre-wrap max-h-28 overflow-y-auto"></div>
+          <div class="flex gap-2 pt-1">
+            <button type="button" onclick="copyReminderWhatsAppText()" class="flex-1 px-2.5 py-1.5 bg-slate-200 hover:bg-slate-300 text-slate-800 font-semibold rounded-lg transition">
+              <i class="fa-regular fa-copy mr-1"></i>Copy Text
+            </button>
+            <button type="button" onclick="sendReminderWhatsApp()" class="flex-1 px-2.5 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold rounded-lg flex items-center justify-center gap-1.5 transition">
+              <i class="fa-brands fa-whatsapp"></i> Send via WhatsApp
+            </button>
+          </div>
+        </div>
+
+        <!-- Option B: Schedule In-App Availability Deadline -->
+        <form onsubmit="saveScheduledReminder(event)" class="space-y-2.5 pt-2 border-t border-slate-100">
+          <label class="block font-bold text-slate-800">2. Schedule RSVP Cutoff & In-App Broadcast</label>
+          <div class="grid grid-cols-2 gap-2">
+            <div>
+              <label class="block text-[11px] font-medium text-slate-600 mb-1">Deadline Date</label>
+              <input type="date" id="schedDeadlineDate" required class="w-full border border-slate-200 rounded-lg p-1.5 bg-slate-50 outline-none" />
+            </div>
+            <div>
+              <label class="block text-[11px] font-medium text-slate-600 mb-1">Deadline Time</label>
+              <input type="time" id="schedDeadlineTime" required class="w-full border border-slate-200 rounded-lg p-1.5 bg-slate-50 outline-none" />
+            </div>
+          </div>
+          <div>
+            <label class="block text-[11px] font-medium text-slate-600 mb-1">Custom Reminder Note</label>
+            <input type="text" id="schedCustomNote" placeholder="e.g. Need Playing XI finalized for jersey prep..." class="w-full border border-slate-200 rounded-lg p-1.5 bg-slate-50 outline-none" />
+          </div>
+
+          <div class="flex justify-end gap-2 pt-2">
+            <button type="button" onclick="closeModal('reminderModal')" class="px-3 py-1.5 text-slate-600 hover:bg-slate-100 rounded-lg">Close</button>
+            <button type="submit" class="px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-lg flex items-center gap-1.5">
+              <i class="fa-regular fa-clock"></i> Save & Broadcast
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal: WhatsApp Team Announcement Generator -->
+  <div id="whatsAppModal" class="hidden fixed inset-0 bg-slate-900/40 backdrop-blur-xs flex items-center justify-center p-4 z-50">
+    <div class="bg-white rounded-xl max-w-lg w-full p-5 shadow-lg border border-slate-200">
+      <div class="flex items-center justify-between mb-3 border-b border-slate-100 pb-2">
+        <h3 class="text-sm font-bold text-slate-900 flex items-center gap-2">
+          <i class="fa-brands fa-whatsapp text-emerald-600 text-base"></i> Share Playing XI via WhatsApp
+        </h3>
+        <button onclick="closeModal('whatsAppModal')" class="text-slate-400 hover:text-slate-600 text-xs"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+
+      <div class="space-y-3 text-xs">
+        <div>
+          <label class="block font-medium text-slate-700 mb-1">Select Motivation Message Preset</label>
+          <select id="motivationPresetSelect" onchange="applyMotivationPreset(this.value)" class="w-full border border-slate-200 rounded-lg p-2 bg-slate-50 outline-none">
+            <option value="aggressive">⚡ High Intensity: "Let's hunt as a pack and bring high energy from ball one!"</option>
+            <option value="composed">🎯 Disciplined: "Focus on our plans, back each other up, and play for the win!"</option>
+            <option value="finals">🏆 Championship Spirit: "Every ball counts. Leave everything on the pitch today!"</option>
+            <option value="custom">✏️ Write Custom Message...</option>
+          </select>
+        </div>
+
+        <div>
+          <label class="block font-medium text-slate-700 mb-1">Custom Motivation Message</label>
+          <textarea id="customMotivationText" rows="2" oninput="generateWhatsAppPreview()" class="w-full border border-slate-200 rounded-lg p-2 bg-slate-50 outline-none focus:border-emerald-500"></textarea>
+        </div>
+
+        <div>
+          <label class="block font-medium text-slate-700 mb-1">Live Message Preview</label>
+          <div id="whatsAppPreview" class="w-full p-3 bg-slate-100 rounded-lg border border-slate-200 text-slate-800 font-mono text-[11px] whitespace-pre-wrap max-h-48 overflow-y-auto"></div>
+        </div>
+
+        <div class="flex justify-end gap-2 pt-2">
+          <button type="button" onclick="closeModal('whatsAppModal')" class="px-3 py-1.5 text-slate-600 hover:bg-slate-100 rounded-lg">Cancel</button>
+          <button type="button" onclick="copyWhatsAppMessage()" class="px-3 py-1.5 bg-slate-200 hover:bg-slate-300 text-slate-800 font-semibold rounded-lg">
+            <i class="fa-regular fa-copy mr-1"></i>Copy Text
+          </button>
+          <button type="button" onclick="sendWhatsAppMessage()" class="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold rounded-lg flex items-center gap-1.5">
+            <i class="fa-brands fa-whatsapp"></i> Open in WhatsApp
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal: Edit / Reschedule / Cancel Fixture -->
+  <div id="editFixtureModal" class="hidden fixed inset-0 bg-slate-900/40 backdrop-blur-xs flex items-center justify-center p-4 z-50">
+    <div class="bg-white rounded-xl max-w-md w-full p-5 shadow-lg border border-slate-200">
+      <div class="flex items-center justify-between mb-3 border-b border-slate-100 pb-2">
+        <h3 class="text-sm font-bold text-slate-900">Reschedule or Cancel Match</h3>
+        <button onclick="closeModal('editFixtureModal')" class="text-slate-400 hover:text-slate-600 text-xs"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+      <form onsubmit="saveFixtureEdits(event)" class="space-y-3 text-xs">
+        <input type="hidden" id="editFixId" />
+        
+        <div>
+          <label class="block font-medium text-slate-700 mb-1">Opponent Name</label>
+          <input type="text" id="editOpponent" required class="w-full border border-slate-200 rounded-lg p-2 bg-slate-50 outline-none" />
+        </div>
+
+        <div class="grid grid-cols-2 gap-2">
+          <div>
+            <label class="block font-medium text-slate-700 mb-1">Date</label>
+            <input type="date" id="editDate" required class="w-full border border-slate-200 rounded-lg p-2 bg-slate-50 outline-none" />
+          </div>
+          <div>
+            <label class="block font-medium text-slate-700 mb-1">Time</label>
+            <input type="text" id="editTime" required class="w-full border border-slate-200 rounded-lg p-2 bg-slate-50 outline-none" />
+          </div>
+        </div>
+
+        <div class="grid grid-cols-2 gap-2">
+          <div>
+            <label class="block font-medium text-slate-700 mb-1">Venue</label>
+            <input type="text" id="editVenue" required class="w-full border border-slate-200 rounded-lg p-2 bg-slate-50 outline-none" />
+          </div>
+          <div>
+            <label class="block font-medium text-slate-700 mb-1">Status</label>
+            <select id="editStatus" class="w-full border border-slate-200 rounded-lg p-2 bg-slate-50 outline-none">
+              <option value="Upcoming">Upcoming</option>
+              <option value="Rescheduled">Rescheduled</option>
+              <option value="Cancelled">Cancelled</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="p-2.5 bg-slate-50 border border-slate-200 rounded-lg space-y-2">
+          <label class="inline-flex items-center gap-2 cursor-pointer">
+            <input type="checkbox" id="editFeeApplicable" onchange="toggleEditFeeVisibility()" class="rounded text-blue-600 focus:ring-0" />
+            <span class="font-medium text-slate-700">Match fee applies</span>
+          </label>
+          <div id="editFeeContainer" class="flex items-center gap-2">
+            <span class="text-slate-500">$</span>
+            <input type="number" id="editFeeAmount" min="0" step="1" class="w-24 border border-slate-200 rounded-md p-1 bg-white" />
+            <span class="text-[11px] text-slate-400">per player</span>
+          </div>
+        </div>
+
+        <div class="p-3 bg-blue-50/70 border border-blue-200 rounded-lg space-y-2">
+          <span class="font-bold text-blue-900 block flex items-center gap-1.5">
+            <i class="fa-regular fa-bell"></i> Teammate Reminder Action
+          </span>
+          <div class="space-y-1 text-slate-700">
+            <label class="flex items-start gap-2 cursor-pointer">
+              <input type="radio" name="reminderType" value="notify" checked class="mt-0.5 text-blue-600" />
+              <span><strong>Notification alert only:</strong> Post match update in Team Room while keeping RSVPs.</span>
+            </label>
+            <label class="flex items-start gap-2 cursor-pointer pt-1">
+              <input type="radio" name="reminderType" value="reanswer" class="mt-0.5 text-blue-600" />
+              <span><strong>Request re-answer:</strong> Reset RSVPs so players must re-confirm for the new date.</span>
+            </label>
+          </div>
+          <div class="pt-1">
+            <input type="text" id="editCustomNote" placeholder="Optional note to team..." class="w-full border border-blue-200 rounded p-1.5 bg-white text-[11px]" />
+          </div>
+        </div>
+
+        <div class="flex justify-end gap-2 pt-2">
+          <button type="button" onclick="closeModal('editFixtureModal')" class="px-3 py-1.5 text-slate-600 hover:bg-slate-100 rounded-lg">Cancel</button>
+          <button type="submit" class="px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-lg">Update & Send Alert</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
   <!-- Modal: Club Settings -->
   <div id="settingsModal" class="hidden fixed inset-0 bg-slate-900/40 backdrop-blur-xs flex items-center justify-center p-4 z-50">
     <div class="bg-white rounded-xl max-w-sm w-full p-5 shadow-lg border border-slate-200">
@@ -208,9 +433,12 @@
       </div>
       <form onsubmit="saveClubSettings(event)" class="space-y-3 text-xs">
         <div>
+          <label class="block font-medium text-slate-700 mb-1">Club / Team Name</label>
+          <input type="text" id="globalClubName" placeholder="e.g. Montréal Werewolves CC" class="w-full border border-slate-200 rounded-lg p-2 bg-slate-50 outline-none" />
+        </div>
+        <div>
           <label class="block font-medium text-slate-700 mb-1">Standard League Match Fee ($)</label>
-          <input type="number" id="globalDefaultFee" min="0" step="1" required class="w-full border border-slate-200 rounded-lg p-2 bg-slate-50 outline-none focus:border-blue-500" />
-          <p class="text-[11px] text-slate-400 mt-1">Default fee populated when scheduling new matches.</p>
+          <input type="number" id="globalDefaultFee" min="0" step="1" required class="w-full border border-slate-200 rounded-lg p-2 bg-slate-50 outline-none" />
         </div>
         <div class="flex justify-end gap-2 pt-2">
           <button type="button" onclick="closeModal('settingsModal')" class="px-3 py-1.5 text-slate-600 hover:bg-slate-100 rounded-lg">Cancel</button>
@@ -230,22 +458,22 @@
       <form onsubmit="createFixture(event)" class="space-y-3 text-xs">
         <div>
           <label class="block font-medium text-slate-700 mb-1">Opponent Name</label>
-          <input type="text" id="fixOpponent" placeholder="e.g. Royal Montreal CC" required class="w-full border border-slate-200 rounded-lg p-2 bg-slate-50 outline-none focus:border-blue-500" />
+          <input type="text" id="fixOpponent" placeholder="e.g. Royal Montreal CC" required class="w-full border border-slate-200 rounded-lg p-2 bg-slate-50 outline-none" />
         </div>
         <div class="grid grid-cols-2 gap-2">
           <div>
             <label class="block font-medium text-slate-700 mb-1">Date</label>
-            <input type="date" id="fixDate" required class="w-full border border-slate-200 rounded-lg p-2 bg-slate-50 outline-none focus:border-blue-500" />
+            <input type="date" id="fixDate" required class="w-full border border-slate-200 rounded-lg p-2 bg-slate-50 outline-none" />
           </div>
           <div>
             <label class="block font-medium text-slate-700 mb-1">Time</label>
-            <input type="text" id="fixTime" placeholder="e.g. 10:00 AM" required class="w-full border border-slate-200 rounded-lg p-2 bg-slate-50 outline-none focus:border-blue-500" />
+            <input type="text" id="fixTime" placeholder="e.g. 10:00 AM" required class="w-full border border-slate-200 rounded-lg p-2 bg-slate-50 outline-none" />
           </div>
         </div>
         <div class="grid grid-cols-2 gap-2">
           <div>
             <label class="block font-medium text-slate-700 mb-1">Match Format</label>
-            <select id="fixFormat" class="w-full border border-slate-200 rounded-lg p-2 bg-slate-50 outline-none focus:border-blue-500">
+            <select id="fixFormat" class="w-full border border-slate-200 rounded-lg p-2 bg-slate-50 outline-none">
               <option value="T20 Match">T20 Match</option>
               <option value="T30 Match">T30 Match</option>
               <option value="40 Overs">40 Overs</option>
@@ -254,7 +482,7 @@
           </div>
           <div>
             <label class="block font-medium text-slate-700 mb-1">Venue</label>
-            <input type="text" id="fixVenue" placeholder="e.g. Parc Marcelin-Wilson" required class="w-full border border-slate-200 rounded-lg p-2 bg-slate-50 outline-none focus:border-blue-500" />
+            <input type="text" id="fixVenue" placeholder="e.g. Parc Marcelin-Wilson" required class="w-full border border-slate-200 rounded-lg p-2 bg-slate-50 outline-none" />
           </div>
         </div>
 
@@ -265,7 +493,7 @@
           </label>
           <div id="feeInputContainer" class="flex items-center gap-2 pt-1">
             <span class="text-slate-500">$</span>
-            <input type="number" id="fixFeeAmount" min="0" step="1" class="w-24 border border-slate-200 rounded-md p-1.5 bg-white outline-none focus:border-blue-500" />
+            <input type="number" id="fixFeeAmount" min="0" step="1" class="w-24 border border-slate-200 rounded-md p-1.5 bg-white outline-none" />
             <span class="text-[11px] text-slate-400">per player</span>
           </div>
         </div>
@@ -381,9 +609,12 @@
     </div>
   </div>
 
-  <!-- ==================== JAVASCRIPT APP LOGIC ==================== -->
+  <!-- ==================== JAVASCRIPT APPLICATION LOGIC ==================== -->
   <script>
-    const DEFAULT_CONFIG = { defaultMatchFee: 20 };
+    const DEFAULT_CONFIG = {
+      clubName: "Montréal Werewolves CC",
+      defaultMatchFee: 20
+    };
 
     const DEFAULT_PLAYERS = [
       { id: "p1", name: "Hemant Khamkar", role: "All-Rounder", bat: "Right", bowl: "Right-arm Medium" },
@@ -416,6 +647,21 @@
           "p5": "attending", "p6": "attending", "p7": "tentative", "p8": "declined",
           "p9": "attending", "p10": "attending", "p11": "attending", "p12": "attending"
         },
+        playingXI: [
+          { id: "p1", isCaptain: true, isWK: false },
+          { id: "p2", isCaptain: false, isWK: false },
+          { id: "p4", isCaptain: false, isWK: true },
+          { id: "p5", isCaptain: false, isWK: false },
+          { id: "p6", isCaptain: false, isWK: false },
+          { id: "p10", isCaptain: false, isWK: false },
+          { id: "p12", isCaptain: false, isWK: false },
+          { id: "p3", isCaptain: false, isWK: false },
+          { id: "p7", isCaptain: false, isWK: false },
+          { id: "p9", isCaptain: false, isWK: false },
+          { id: "p11", isCaptain: false, isWK: false }
+        ],
+        impactPlayerId: "p8",
+        reminderSchedule: null,
         dues: { "p1": "Paid", "p2": "Pending", "p3": "Paid", "p4": "Paid" },
         report: null
       },
@@ -430,6 +676,9 @@
         fee: 0,
         status: "Upcoming",
         rsvps: { "p1": "attending", "p2": "attending", "p3": "attending" },
+        playingXI: [],
+        impactPlayerId: null,
+        reminderSchedule: null,
         dues: {},
         report: null
       },
@@ -444,13 +693,20 @@
         fee: 20,
         status: "Completed",
         rsvps: { "p1": "attending", "p2": "attending", "p3": "attending" },
+        playingXI: [
+          { id: "p1", isCaptain: true, isWK: false },
+          { id: "p2", isCaptain: false, isWK: false },
+          { id: "p3", isCaptain: false, isWK: false }
+        ],
+        impactPlayerId: "p2",
+        reminderSchedule: null,
         dues: { "p1": "Paid", "p2": "Paid" },
         report: {
           ourScore: "168/5 (20.0 ov)",
           opponentScore: "142/9 (20.0 ov)",
           result: "Won",
           potm: "Hemant Khamkar",
-          notes: "Solid opening partnership and disciplined bowling at the death."
+          notes: "Disciplined opening spells and great team fielding."
         }
       }
     ];
@@ -471,8 +727,7 @@
       { id: "c2", author: "Hemant", text: "Got it, confirmed RSVP!", time: "11:00 AM", isManager: false }
     ];
 
-    // Data Load & Self-Healing Migration
-    let config, players, fixtures, polls, chatMessages, playingXI;
+    let config, players, fixtures, polls, chatMessages;
 
     try {
       config = JSON.parse(localStorage.getItem("cricket_config")) || DEFAULT_CONFIG;
@@ -480,33 +735,25 @@
       fixtures = JSON.parse(localStorage.getItem("cricket_fixtures")) || DEFAULT_FIXTURES;
       polls = JSON.parse(localStorage.getItem("cricket_polls")) || DEFAULT_POLLS;
       chatMessages = JSON.parse(localStorage.getItem("cricket_chats")) || DEFAULT_CHATS;
-      playingXI = JSON.parse(localStorage.getItem("cricket_playingXI")) || [
-        { id: "p1", isCaptain: true, isWK: false },
-        { id: "p2", isCaptain: false, isWK: false },
-        { id: "p4", isCaptain: false, isWK: true },
-        { id: "p5", isCaptain: false, isWK: false },
-        { id: "p6", isCaptain: false, isWK: false },
-        { id: "p10", isCaptain: false, isWK: false },
-        { id: "p12", isCaptain: false, isWK: false },
-        { id: "p3", isCaptain: false, isWK: false },
-        { id: "p7", isCaptain: false, isWK: false },
-        { id: "p9", isCaptain: false, isWK: false },
-        { id: "p11", isCaptain: false, isWK: false }
-      ];
 
-      // Sanitize fixtures to prevent render crashes on stale data
+      if (!config.clubName) config.clubName = "Montréal Werewolves CC";
+
       fixtures.forEach(f => {
         if (typeof f.feeApplicable === "undefined") f.feeApplicable = Boolean(f.fee && f.fee > 0);
         if (typeof f.fee === "undefined") f.fee = 0;
         if (!f.rsvps) f.rsvps = {};
         if (!f.dues) f.dues = {};
+        if (!f.playingXI) f.playingXI = [];
+        if (typeof f.impactPlayerId === "undefined") f.impactPlayerId = null;
+        if (typeof f.reminderSchedule === "undefined") f.reminderSchedule = null;
       });
     } catch (e) {
-      console.error("Storage corrupted. Resetting to defaults.", e);
       clearAppCache();
     }
 
     let currentPersona = "manager";
+    let selectedLineupFixtureId = (fixtures[0] && fixtures[0].id) || null;
+    let activeReminderFixtureId = null;
 
     function saveState() {
       localStorage.setItem("cricket_config", JSON.stringify(config));
@@ -514,22 +761,15 @@
       localStorage.setItem("cricket_fixtures", JSON.stringify(fixtures));
       localStorage.setItem("cricket_polls", JSON.stringify(polls));
       localStorage.setItem("cricket_chats", JSON.stringify(chatMessages));
-      localStorage.setItem("cricket_playingXI", JSON.stringify(playingXI));
     }
 
     function clearAppCache() {
-      localStorage.removeItem("cricket_config");
-      localStorage.removeItem("cricket_players");
-      localStorage.removeItem("cricket_fixtures");
-      localStorage.removeItem("cricket_polls");
-      localStorage.removeItem("cricket_chats");
-      localStorage.removeItem("cricket_playingXI");
+      localStorage.clear();
       location.reload();
     }
 
-    // Tab Navigation
     function switchTab(tabId) {
-      ["fixtures", "lineup", "dues", "community", "roster"].forEach(tab => {
+      ["fixtures", "lineup", "stats", "dues", "community", "roster"].forEach(tab => {
         const viewEl = document.getElementById(`view-${tab}`);
         const tabEl = document.getElementById(`tab-${tab}`);
         if (viewEl && tabEl) {
@@ -545,48 +785,28 @@
       renderCurrentTab(tabId);
     }
 
-    // Role Persona Switcher (Fixed recursion bug)
     function switchPersona(val) {
       currentPersona = val;
       const managerElements = document.querySelectorAll(".manager-only");
       managerElements.forEach(el => {
-        if (currentPersona === "manager") {
-          el.classList.remove("hidden");
-        } else {
-          el.classList.add("hidden");
-        }
+        if (currentPersona === "manager") el.classList.remove("hidden");
+        else el.classList.add("hidden");
       });
       renderFixtures();
       renderDuesTable();
+      renderParticipationLedger();
     }
 
     function renderCurrentTab(tabId) {
       if (tabId === "fixtures") renderFixtures();
-      if (tabId === "lineup") renderLineupBuilder();
+      if (tabId === "lineup") { populateLineupDropdown(); renderLineupBuilder(); }
+      if (tabId === "stats") renderParticipationLedger();
       if (tabId === "dues") { populateDuesDropdown(); renderDuesTable(); }
       if (tabId === "community") { renderPolls(); renderChat(); }
       if (tabId === "roster") renderRoster();
     }
 
-    // Club Settings
-    function saveClubSettings(event) {
-      event.preventDefault();
-      const newFee = parseFloat(document.getElementById("globalDefaultFee").value) || 0;
-      config.defaultMatchFee = newFee;
-      saveState();
-      closeModal("settingsModal");
-    }
-
-    function toggleFeeInputVisibility() {
-      const isFeeChecked = document.getElementById("fixFeeApplicable").checked;
-      const feeInputContainer = document.getElementById("feeInputContainer");
-      if (feeInputContainer) {
-        if (isFeeChecked) feeInputContainer.classList.remove("hidden");
-        else feeInputContainer.classList.add("hidden");
-      }
-    }
-
-    // Fixtures & RSVPs
+    // --- FIXTURES LOGIC ---
     function renderFixtures() {
       const container = document.getElementById("fixturesList");
       if (!container) return;
@@ -601,30 +821,46 @@
           if (s === "declined") declined++;
         });
 
+        // Compute Unanswered Count
+        const unansweredPlayers = players.filter(p => !rsvps[p.id] || rsvps[p.id] === "unanswered");
+        const unansweredCount = unansweredPlayers.length;
+
         const myStatus = currentPersona !== "manager" ? (rsvps[currentPersona] || "unanswered") : null;
         const feeIsApplicable = Boolean(fixture.feeApplicable && fixture.fee > 0);
+        const isNotCompleted = fixture.status !== "Completed";
+        const isCancelled = fixture.status === "Cancelled";
+        const xiCount = (fixture.playingXI && fixture.playingXI.length) || 0;
+        const impactPlayer = fixture.impactPlayerId ? players.find(p => p.id === fixture.impactPlayerId) : null;
+
+        let statusBadge = "bg-blue-50 text-blue-700";
+        if (fixture.status === "Completed") statusBadge = "bg-slate-100 text-slate-700";
+        if (fixture.status === "Rescheduled") statusBadge = "bg-amber-100 text-amber-800";
+        if (fixture.status === "Cancelled") statusBadge = "bg-rose-100 text-rose-800 font-bold";
 
         const card = document.createElement("div");
-        card.className = "bg-white rounded-xl border border-slate-200 p-4 shadow-xs card-transition space-y-3.5";
+        card.className = `bg-white rounded-xl border ${isCancelled ? 'border-rose-200 bg-rose-50/20' : 'border-slate-200'} p-4 shadow-xs card-transition space-y-3.5`;
 
         card.innerHTML = `
           <div class="flex items-start justify-between gap-3">
             <div>
               <div class="flex items-center gap-1.5 flex-wrap">
-                <span class="text-[10px] font-bold px-2 py-0.5 rounded-full ${fixture.status === 'Completed' ? 'bg-slate-100 text-slate-700' : 'bg-blue-50 text-blue-700'}">
-                  ${fixture.format || 'Match'}
-                </span>
+                <span class="text-[10px] font-bold px-2 py-0.5 rounded-full ${statusBadge}">${fixture.status || 'Upcoming'}</span>
+                <span class="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-slate-100 text-slate-700">${fixture.format || 'Match'}</span>
                 ${feeIsApplicable ? `
-                  <span class="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700">
-                    Fee: $${fixture.fee}
-                  </span>
+                  <span class="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700">Fee: $${fixture.fee}</span>
                 ` : `
-                  <span class="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-slate-100 text-slate-500">
-                    No Match Fee
-                  </span>
+                  <span class="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-slate-100 text-slate-500">No Match Fee</span>
                 `}
+                <span class="text-[10px] font-bold px-2 py-0.5 rounded-full ${xiCount === 11 ? 'bg-emerald-100 text-emerald-800' : 'bg-slate-100 text-slate-600'}">
+                  XI: ${xiCount}/11
+                </span>
+                ${impactPlayer ? `
+                  <span class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-purple-100 text-purple-800">
+                    <i class="fa-solid fa-bolt mr-0.5"></i> ${impactPlayer.name}
+                  </span>
+                ` : ''}
               </div>
-              <h3 class="text-base font-bold text-slate-900 mt-1">vs. ${fixture.opponent}</h3>
+              <h3 class="text-base font-bold ${isCancelled ? 'line-through text-slate-400' : 'text-slate-900'} mt-1">vs. ${fixture.opponent}</h3>
               <p class="text-xs text-slate-500 flex items-center gap-1.5 mt-0.5">
                 <i class="fa-regular fa-calendar text-slate-400"></i> ${fixture.date} • ${fixture.time}
               </p>
@@ -632,24 +868,59 @@
                 <i class="fa-solid fa-location-dot text-slate-400"></i> ${fixture.venue}
               </p>
             </div>
-            <div>
-              ${fixture.report ? `
-                <span class="text-[11px] font-bold px-2.5 py-1 rounded-lg bg-emerald-100 text-emerald-800">
-                  ${fixture.report.result}
-                </span>
-              ` : `
-                <button onclick="openMatchReportModal('${fixture.id}')" class="manager-only text-[11px] font-medium text-slate-600 bg-slate-100 hover:bg-slate-200 px-2.5 py-1 rounded-lg transition border border-slate-200 ${currentPersona !== 'manager' ? 'hidden' : ''}">
-                  Summary
+
+            <div class="flex items-center gap-1.5">
+              ${isNotCompleted ? `
+                <button onclick="goToLineupForFixture('${fixture.id}')" class="text-[11px] font-semibold text-blue-600 bg-blue-50 hover:bg-blue-100 px-2.5 py-1 rounded-lg transition">
+                  <i class="fa-solid fa-users-viewfinder mr-1"></i>XI
                 </button>
-              `}
+                <button onclick="openEditFixtureModal('${fixture.id}')" class="manager-only text-[11px] font-medium text-slate-600 bg-slate-100 hover:bg-slate-200 px-2 py-1 rounded-lg transition border border-slate-200 ${currentPersona !== 'manager' ? 'hidden' : ''}">
+                  <i class="fa-regular fa-pen-to-square"></i>
+                </button>
+              ` : ''}
+
+              ${fixture.report ? `
+                <span class="text-[11px] font-bold px-2.5 py-1 rounded-lg bg-emerald-100 text-emerald-800">${fixture.report.result}</span>
+              ` : (fixture.status !== 'Cancelled' ? `
+                <button onclick="openMatchReportModal('${fixture.id}')" class="manager-only text-[11px] font-medium text-slate-600 bg-slate-100 hover:bg-slate-200 px-2.5 py-1 rounded-lg transition border border-slate-200 ${currentPersona !== 'manager' ? 'hidden' : ''}">
+                  Result
+                </button>
+              ` : '')}
             </div>
           </div>
 
-          <div class="grid grid-cols-3 gap-1 bg-slate-50 p-2 rounded-lg text-center text-[11px] border border-slate-100">
-            <div><span class="font-bold text-emerald-600">${attending}</span> <span class="text-slate-400">Yes</span></div>
-            <div><span class="font-bold text-amber-500">${tentative}</span> <span class="text-slate-400">Maybe</span></div>
-            <div><span class="font-bold text-rose-500">${declined}</span> <span class="text-slate-400">No</span></div>
-          </div>
+          <!-- Attendance Counter & Reminder Trigger -->
+          ${!isCancelled ? `
+            <div class="space-y-2">
+              <div class="grid grid-cols-4 gap-1 bg-slate-50 p-2 rounded-lg text-center text-[11px] border border-slate-100">
+                <div><span class="font-bold text-emerald-600">${attending}</span> <span class="text-slate-400">Yes</span></div>
+                <div><span class="font-bold text-amber-500">${tentative}</span> <span class="text-slate-400">Maybe</span></div>
+                <div><span class="font-bold text-rose-500">${declined}</span> <span class="text-slate-400">No</span></div>
+                <div><span class="font-bold text-slate-600">${unansweredCount}</span> <span class="text-slate-400">Unanswered</span></div>
+              </div>
+
+              <!-- Scheduled Reminder Badge (if active) -->
+              ${fixture.reminderSchedule ? `
+                <div class="px-2.5 py-1 bg-amber-50 text-amber-900 border border-amber-200 rounded-lg text-[10px] flex items-center justify-between">
+                  <span><i class="fa-regular fa-clock mr-1"></i>RSVP Cutoff: <strong>${fixture.reminderSchedule.date} at ${fixture.reminderSchedule.time}</strong></span>
+                  <span class="font-semibold text-amber-700">${unansweredCount} Pending</span>
+                </div>
+              ` : ''}
+
+              <!-- Manager Reminder Button -->
+              ${unansweredCount > 0 && isNotCompleted ? `
+                <div class="manager-only flex items-center justify-end ${currentPersona !== 'manager' ? 'hidden' : ''}">
+                  <button onclick="openReminderModal('${fixture.id}')" class="px-2.5 py-1 bg-amber-100 hover:bg-amber-200 text-amber-900 font-semibold rounded-lg text-[11px] flex items-center gap-1.5 transition">
+                    <i class="fa-solid fa-bell"></i> Nudge Unanswered (${unansweredCount})
+                  </button>
+                </div>
+              ` : ''}
+            </div>
+          ` : `
+            <div class="p-2 bg-rose-100/70 text-rose-800 rounded-lg text-xs font-semibold flex items-center gap-2">
+              <i class="fa-solid fa-ban"></i> Match has been cancelled.
+            </div>
+          `}
 
           ${fixture.report ? `
             <div class="p-2.5 bg-slate-50 rounded-lg border border-slate-100 text-[11px] space-y-1">
@@ -661,7 +932,7 @@
             </div>
           ` : ''}
 
-          ${currentPersona !== "manager" ? `
+          ${currentPersona !== "manager" && !isCancelled ? `
             <div class="flex items-center justify-between pt-2 border-t border-slate-100 text-xs">
               <span class="text-[11px] text-slate-500 font-medium">Your RSVP: <strong class="uppercase text-blue-600">${myStatus}</strong></span>
               <div class="flex gap-1">
@@ -674,6 +945,583 @@
         `;
         container.appendChild(card);
       });
+    }
+
+    function goToLineupForFixture(fixtureId) {
+      selectedLineupFixtureId = fixtureId;
+      switchTab('lineup');
+    }
+
+    function setRSVP(fixId, pId, status) {
+      const fix = fixtures.find(f => f.id === fixId);
+      if (!fix) return;
+      if (!fix.rsvps) fix.rsvps = {};
+      fix.rsvps[pId] = status;
+      saveState();
+      renderFixtures();
+      renderParticipationLedger();
+    }
+
+    // --- REMINDER SCHEDULING & UNANSWERED BROADCAST ENGINE ---
+    function openReminderModal(fixtureId) {
+      activeReminderFixtureId = fixtureId;
+      const fix = fixtures.find(f => f.id === fixtureId);
+      if (!fix) return;
+
+      const rsvps = fix.rsvps || {};
+      const unansweredPlayers = players.filter(p => !rsvps[p.id] || rsvps[p.id] === "unanswered");
+
+      document.getElementById("reminderMatchTitle").innerText = `vs. ${fix.opponent} (${fix.date})`;
+      document.getElementById("reminderPendingBadge").innerText = `${unansweredPlayers.length} Pending`;
+      document.getElementById("reminderPendingList").innerText = unansweredPlayers.map(p => p.name).join(", ") || "None";
+
+      // Populate schedule inputs if existing
+      if (fix.reminderSchedule) {
+        document.getElementById("schedDeadlineDate").value = fix.reminderSchedule.date || "";
+        document.getElementById("schedDeadlineTime").value = fix.reminderSchedule.time || "";
+        document.getElementById("schedCustomNote").value = fix.reminderSchedule.note || "";
+      } else {
+        document.getElementById("schedDeadlineDate").value = fix.date;
+        document.getElementById("schedDeadlineTime").value = "18:00";
+        document.getElementById("schedCustomNote").value = "";
+      }
+
+      document.getElementById("reminderWhatsAppPreview").innerText = buildReminderWhatsAppText(fix, unansweredPlayers);
+      openModal("reminderModal");
+    }
+
+    function buildReminderWhatsAppText(fix, unansweredPlayers) {
+      const teamTitle = config.clubName || "Montréal Werewolves CC";
+      const namesList = unansweredPlayers.map((p, i) => `${i + 1}. ${p.name}`).join("\n");
+
+      return `📢 *${teamTitle} - URGENT RSVP REMINDER* 📢\n` +
+             `━━━━━━━━━━━━━━━━━━━\n` +
+             `⚔️ *Match:* vs. ${fix.opponent}\n` +
+             `📅 *Date:* ${fix.date} (${fix.time})\n` +
+             `📍 *Venue:* ${fix.venue}\n` +
+             `━━━━━━━━━━━━━━━━━━━\n` +
+             `⚠️ *Awaiting Availability from:*\n` +
+             `${namesList}\n` +
+             `━━━━━━━━━━━━━━━━━━━\n` +
+             `👉 Please update your RSVP in the team app so the Playing XI can be locked in on time!\n` +
+             `🐺 *#OneTeam #MontréalWerewolves*`;
+    }
+
+    function copyReminderWhatsAppText() {
+      const fix = fixtures.find(f => f.id === activeReminderFixtureId);
+      if (!fix) return;
+      const rsvps = fix.rsvps || {};
+      const unanswered = players.filter(p => !rsvps[p.id] || rsvps[p.id] === "unanswered");
+      const text = buildReminderWhatsAppText(fix, unanswered);
+      navigator.clipboard.writeText(text).then(() => {
+        alert("Reminder message copied to clipboard!");
+      });
+    }
+
+    function sendReminderWhatsApp() {
+      const fix = fixtures.find(f => f.id === activeReminderFixtureId);
+      if (!fix) return;
+      const rsvps = fix.rsvps || {};
+      const unanswered = players.filter(p => !rsvps[p.id] || rsvps[p.id] === "unanswered");
+      const text = buildReminderWhatsAppText(fix, unanswered);
+      const encoded = encodeURIComponent(text);
+      window.open(`https://api.whatsapp.com/send?text=${encoded}`, '_blank');
+    }
+
+    function saveScheduledReminder(event) {
+      event.preventDefault();
+      const fix = fixtures.find(f => f.id === activeReminderFixtureId);
+      if (!fix) return;
+
+      const dDate = document.getElementById("schedDeadlineDate").value;
+      const dTime = document.getElementById("schedDeadlineTime").value;
+      const dNote = document.getElementById("schedCustomNote").value.trim();
+
+      fix.reminderSchedule = { date: dDate, time: dTime, note: dNote };
+
+      const rsvps = fix.rsvps || {};
+      const unanswered = players.filter(p => !rsvps[p.id] || rsvps[p.id] === "unanswered");
+      const names = unanswered.map(p => p.name).join(", ");
+
+      // Post broadcast to Team Room
+      chatMessages.push({
+        id: "c_" + Date.now(),
+        author: "Match Operations",
+        text: `⏰ RSVP DEADLINE SCHEDULED: Availability for match vs ${fix.opponent} must be confirmed by ${dDate} at ${dTime}. Pending responses needed from: ${names}. ${dNote ? `Note: "${dNote}"` : ''}`,
+        time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+        isManager: true
+      });
+
+      saveState();
+      closeModal("reminderModal");
+      renderFixtures();
+      renderChat();
+      alert("Reminder scheduled & posted to Team Room!");
+    }
+
+    // --- PLAYING XI & IMPACT PLAYER LOGIC ---
+    function populateLineupDropdown() {
+      const select = document.getElementById("lineupFixtureSelect");
+      if (!select) return;
+      select.innerHTML = fixtures.map(f => `
+        <option value="${f.id}" ${f.id === selectedLineupFixtureId ? 'selected' : ''}>
+          vs. ${f.opponent} (${f.date})
+        </option>
+      `).join("");
+    }
+
+    function onLineupFixtureChange() {
+      const select = document.getElementById("lineupFixtureSelect");
+      selectedLineupFixtureId = select.value;
+      renderLineupBuilder();
+    }
+
+    function getActiveLineupFixture() {
+      return fixtures.find(f => f.id === selectedLineupFixtureId) || fixtures[0];
+    }
+
+    function renderLineupBuilder() {
+      const activeFixture = getActiveLineupFixture();
+      if (!activeFixture) return;
+
+      if (!activeFixture.playingXI) activeFixture.playingXI = [];
+
+      const filterEl = document.getElementById("filterAttendingOnly");
+      const filterAttending = filterEl ? filterEl.checked : false;
+
+      const poolList = document.getElementById("playerPoolList");
+      const xiList = document.getElementById("playingXIList");
+      const impactSlot = document.getElementById("impactPlayerSlot");
+      if (!poolList || !xiList || !impactSlot) return;
+
+      poolList.innerHTML = "";
+      xiList.innerHTML = "";
+      impactSlot.innerHTML = "";
+
+      const xiIds = activeFixture.playingXI.map(item => item.id);
+      const impactId = activeFixture.impactPlayerId;
+
+      let pool = players.filter(p => !xiIds.includes(p.id) && p.id !== impactId);
+
+      if (filterAttending && activeFixture.rsvps) {
+        pool = pool.filter(p => activeFixture.rsvps[p.id] === "attending");
+      }
+
+      document.getElementById("poolCount").innerText = `${pool.length} available`;
+      document.getElementById("xiCount").innerText = `${activeFixture.playingXI.length} / 11`;
+
+      if (impactId) {
+        const impPlayer = players.find(p => p.id === impactId);
+        if (impPlayer) {
+          impactSlot.innerHTML = `
+            <div class="p-2.5 rounded-lg border border-purple-200 bg-white flex items-center justify-between text-xs shadow-2xs">
+              <div class="flex items-center gap-2">
+                <span class="w-6 h-6 rounded-md bg-purple-100 text-purple-700 flex items-center justify-center font-bold text-xs">
+                  <i class="fa-solid fa-bolt"></i>
+                </span>
+                <div>
+                  <div class="font-bold text-slate-800">${impPlayer.name}</div>
+                  <div class="text-[10px] text-purple-700 font-medium">${impPlayer.role} • ${impPlayer.bat} Bat</div>
+                </div>
+              </div>
+              <button onclick="removeImpactPlayer()" class="manager-only text-rose-500 hover:text-rose-700 p-1 text-xs transition ${currentPersona !== 'manager' ? 'hidden' : ''}">
+                <i class="fa-solid fa-trash mr-1"></i>Remove
+              </button>
+            </div>
+          `;
+        }
+      } else {
+        impactSlot.innerHTML = `
+          <div class="p-2.5 rounded-lg border border-dashed border-purple-200 bg-white/50 text-center text-xs text-purple-600 font-medium">
+            No Impact Player / 12th Man assigned. Select "+ Impact" from the squad pool below.
+          </div>
+        `;
+      }
+
+      pool.forEach(player => {
+        const item = document.createElement("div");
+        item.className = "p-2 rounded-lg border border-slate-100 bg-slate-50 flex items-center justify-between text-xs";
+        item.innerHTML = `
+          <div>
+            <div class="font-semibold text-slate-800">${player.name}</div>
+            <div class="text-[11px] text-slate-400">${player.role} • ${player.bat}</div>
+          </div>
+          <div class="flex items-center gap-1.5 ${currentPersona !== 'manager' ? 'hidden' : ''}">
+            <button onclick="setAsImpactPlayer('${player.id}')" class="manager-only px-2 py-1 bg-purple-100 hover:bg-purple-200 text-purple-800 rounded-md text-[11px] font-semibold transition">
+              + Impact
+            </button>
+            <button onclick="addToFixtureXI('${player.id}')" class="manager-only px-2 py-1 bg-blue-600 hover:bg-blue-700 text-white rounded-md text-[11px] font-medium transition">
+              + XI
+            </button>
+          </div>
+        `;
+        poolList.appendChild(item);
+      });
+
+      activeFixture.playingXI.forEach((item, index) => {
+        const player = players.find(p => p.id === item.id);
+        if (!player) return;
+
+        const row = document.createElement("div");
+        row.className = "p-2 rounded-lg border border-slate-100 bg-white flex items-center justify-between text-xs shadow-2xs";
+        row.innerHTML = `
+          <div class="flex items-center gap-2">
+            <span class="w-5 h-5 rounded-md bg-slate-100 text-slate-600 flex items-center justify-center font-bold text-[10px]">${index + 1}</span>
+            <div>
+              <span class="font-semibold text-slate-800">${player.name}</span>
+              ${item.isCaptain ? '<span class="ml-1 bg-amber-100 text-amber-800 px-1 py-0.2 rounded font-bold text-[9px]">C</span>' : ''}
+              ${item.isWK ? '<span class="ml-1 bg-indigo-100 text-indigo-800 px-1 py-0.2 rounded font-bold text-[9px]">WK</span>' : ''}
+              <div class="text-[10px] text-slate-400">${player.role}</div>
+            </div>
+          </div>
+          <div class="flex items-center gap-1 ${currentPersona !== 'manager' ? 'hidden' : ''}">
+            <button onclick="movePlayer(${index}, -1)" ${index === 0 ? 'disabled class="opacity-20"' : ''} class="p-1 hover:bg-slate-100 rounded text-slate-500">▲</button>
+            <button onclick="movePlayer(${index}, 1)" ${index === activeFixture.playingXI.length - 1 ? 'disabled class="opacity-20"' : ''} class="p-1 hover:bg-slate-100 rounded text-slate-500">▼</button>
+            <button onclick="toggleCaptain(${index})" class="px-1.5 py-0.5 rounded text-[10px] font-bold ${item.isCaptain ? 'bg-amber-600 text-white' : 'bg-slate-100 text-slate-600'}">C</button>
+            <button onclick="toggleWK(${index})" class="px-1.5 py-0.5 rounded text-[10px] font-bold ${item.isWK ? 'bg-indigo-600 text-white' : 'bg-slate-100 text-slate-600'}">WK</button>
+            <button onclick="removeFromFixtureXI(${index})" class="text-rose-500 hover:text-rose-700 p-1"><i class="fa-solid fa-trash text-[11px]"></i></button>
+          </div>
+        `;
+        xiList.appendChild(row);
+      });
+    }
+
+    function setAsImpactPlayer(playerId) {
+      const fix = getActiveLineupFixture();
+      if (!fix) return;
+      fix.impactPlayerId = playerId;
+      saveState();
+      renderLineupBuilder();
+      renderFixtures();
+      renderParticipationLedger();
+    }
+
+    function removeImpactPlayer() {
+      const fix = getActiveLineupFixture();
+      if (!fix) return;
+      fix.impactPlayerId = null;
+      saveState();
+      renderLineupBuilder();
+      renderFixtures();
+      renderParticipationLedger();
+    }
+
+    function addToFixtureXI(id) {
+      const fix = getActiveLineupFixture();
+      if (!fix) return;
+      if (!fix.playingXI) fix.playingXI = [];
+      if (fix.playingXI.length >= 11) { alert("Playing XI is already full (11 players)."); return; }
+      fix.playingXI.push({ id, isCaptain: false, isWK: false });
+      saveState();
+      renderLineupBuilder();
+      renderFixtures();
+      renderParticipationLedger();
+    }
+
+    function removeFromFixtureXI(idx) {
+      const fix = getActiveLineupFixture();
+      if (!fix || !fix.playingXI) return;
+      fix.playingXI.splice(idx, 1);
+      saveState();
+      renderLineupBuilder();
+      renderFixtures();
+      renderParticipationLedger();
+    }
+
+    function movePlayer(idx, dir) {
+      const fix = getActiveLineupFixture();
+      if (!fix || !fix.playingXI) return;
+      const target = idx + dir;
+      if (target < 0 || target >= fix.playingXI.length) return;
+      const tmp = fix.playingXI[idx];
+      fix.playingXI[idx] = fix.playingXI[target];
+      fix.playingXI[target] = tmp;
+      saveState();
+      renderLineupBuilder();
+    }
+
+    function toggleCaptain(idx) {
+      const fix = getActiveLineupFixture();
+      if (!fix || !fix.playingXI) return;
+      fix.playingXI.forEach((p, i) => p.isCaptain = (i === idx ? !p.isCaptain : false));
+      saveState();
+      renderLineupBuilder();
+    }
+
+    function toggleWK(idx) {
+      const fix = getActiveLineupFixture();
+      if (!fix || !fix.playingXI) return;
+      fix.playingXI.forEach((p, i) => p.isWK = (i === idx ? !p.isWK : false));
+      saveState();
+      renderLineupBuilder();
+    }
+
+    function resetPlayingXI() {
+      const fix = getActiveLineupFixture();
+      if (!fix) return;
+      fix.playingXI = [];
+      saveState();
+      renderLineupBuilder();
+      renderFixtures();
+      renderParticipationLedger();
+    }
+
+    // --- PARTICIPATION & DUTIES METRICS ---
+    function renderParticipationLedger() {
+      const container = document.getElementById("participationLedgerContainer");
+      if (!container) return;
+
+      const nonCancelledFixtures = fixtures.filter(f => f.status !== "Cancelled");
+      const totalMatches = nonCancelledFixtures.length;
+
+      if (totalMatches === 0) {
+        container.innerHTML = `<p class="text-xs text-slate-400">No active fixtures found to calculate metrics.</p>`;
+        return;
+      }
+
+      let rowsHtml = players.map(player => {
+        let availableCount = 0;
+        let selectedXICount = 0;
+        let twelfthManDutyCount = 0;
+
+        nonCancelledFixtures.forEach(fix => {
+          const rsvp = (fix.rsvps && fix.rsvps[player.id]) || "unanswered";
+          if (rsvp === "attending") availableCount++;
+
+          const inXI = fix.playingXI && fix.playingXI.some(item => item.id === player.id);
+          if (inXI) selectedXICount++;
+
+          if (fix.impactPlayerId === player.id) twelfthManDutyCount++;
+        });
+
+        const availabilityPct = Math.round((availableCount / totalMatches) * 100);
+        const selectionRatioPct = availableCount > 0 ? Math.round((selectedXICount / availableCount) * 100) : 0;
+        const isCurrentActiveUser = currentPersona === player.id;
+
+        return `
+          <tr class="border-b border-slate-100 hover:bg-slate-50/60 text-xs ${isCurrentActiveUser ? 'bg-blue-50/40' : ''}">
+            <td class="py-3 px-3 font-semibold text-slate-800">
+              <div class="flex items-center gap-1.5">
+                <span>${player.name}</span>
+                ${isCurrentActiveUser ? '<span class="text-[9px] bg-blue-100 text-blue-800 px-1 rounded font-bold">You</span>' : ''}
+              </div>
+              <div class="text-[10px] text-slate-400">${player.role}</div>
+            </td>
+            <td class="py-3 px-3">
+              <div class="flex items-center gap-2">
+                <span class="font-bold text-slate-700">${availableCount} / ${totalMatches}</span>
+                <span class="text-[10px] px-1.5 py-0.2 rounded font-semibold ${availabilityPct >= 75 ? 'bg-emerald-50 text-emerald-700' : 'bg-slate-100 text-slate-600'}">
+                  ${availabilityPct}%
+                </span>
+              </div>
+              <div class="w-20 h-1 bg-slate-100 rounded-full mt-1 overflow-hidden">
+                <div class="bg-emerald-500 h-full" style="width: ${availabilityPct}%"></div>
+              </div>
+            </td>
+            <td class="py-3 px-3">
+              <div class="flex items-center gap-2">
+                <span class="font-bold text-blue-700">${selectedXICount}</span>
+                <span class="text-[10px] text-slate-400">of ${availableCount} avail</span>
+                <span class="text-[10px] font-bold px-1.5 py-0.2 rounded bg-blue-50 text-blue-700">
+                  ${selectionRatioPct}%
+                </span>
+              </div>
+              <div class="w-20 h-1 bg-slate-100 rounded-full mt-1 overflow-hidden">
+                <div class="bg-blue-600 h-full" style="width: ${selectionRatioPct}%"></div>
+              </div>
+            </td>
+            <td class="py-3 px-3">
+              <span class="inline-flex items-center gap-1 font-bold text-purple-800 bg-purple-100 px-2 py-0.5 rounded-full text-xs">
+                <i class="fa-solid fa-bolt text-[10px] text-purple-600"></i> ${twelfthManDutyCount} ${twelfthManDutyCount === 1 ? 'match' : 'matches'}
+              </span>
+            </td>
+          </tr>
+        `;
+      }).join("");
+
+      container.innerHTML = `
+        <table class="w-full text-left border-collapse">
+          <thead>
+            <tr class="border-b border-slate-200 bg-slate-50 text-[10px] uppercase font-bold text-slate-500">
+              <th class="py-2.5 px-3">Player</th>
+              <th class="py-2.5 px-3">Availability (RSVP)</th>
+              <th class="py-2.5 px-3">Selection Ratio (in XI)</th>
+              <th class="py-2.5 px-3">12th Man / Impact Duty</th>
+            </tr>
+          </thead>
+          <tbody>${rowsHtml}</tbody>
+        </table>
+      `;
+    }
+
+    // --- WHATSAPP ANNOUNCEMENT GENERATOR ---
+    const MOTIVATION_PRESETS = {
+      aggressive: "Let's hunt as a pack and bring high energy from ball one! Play fearless cricket and leave no doubt!",
+      composed: "Focus on our plans, back each other up, and stick to the basics. Play disciplined cricket for the team!",
+      finals: "Every ball counts. Put in 100% effort in the field and let's get the win together!"
+    };
+
+    function openWhatsAppModal() {
+      const fix = getActiveLineupFixture();
+      if (!fix) return;
+      if (!fix.playingXI || fix.playingXI.length === 0) {
+        alert("Please pick players in the Playing XI before generating the WhatsApp message.");
+        return;
+      }
+
+      document.getElementById("motivationPresetSelect").value = "aggressive";
+      document.getElementById("customMotivationText").value = MOTIVATION_PRESETS.aggressive;
+      generateWhatsAppPreview();
+      openModal("whatsAppModal");
+    }
+
+    function applyMotivationPreset(presetKey) {
+      const customInput = document.getElementById("customMotivationText");
+      if (presetKey === "custom") {
+        customInput.value = "";
+        customInput.focus();
+      } else {
+        customInput.value = MOTIVATION_PRESETS[presetKey] || "";
+      }
+      generateWhatsAppPreview();
+    }
+
+    function buildFormattedWhatsAppText() {
+      const fix = getActiveLineupFixture();
+      if (!fix) return "";
+
+      const teamTitle = config.clubName || "Montréal Werewolves CC";
+      const motivation = document.getElementById("customMotivationText").value.trim();
+
+      let lineupLines = (fix.playingXI || []).map((item, idx) => {
+        const p = players.find(player => player.id === item.id);
+        const name = p ? p.name : "Player";
+        let badges = [];
+        if (item.isCaptain) badges.push("(C)");
+        if (item.isWK) badges.push("(WK)");
+        const tag = badges.length ? " " + badges.join(" ") : "";
+        return `${idx + 1}. ${name}${tag}`;
+      }).join("\n");
+
+      let impactText = "";
+      if (fix.impactPlayerId) {
+        const imp = players.find(p => p.id === fix.impactPlayerId);
+        if (imp) {
+          impactText = `\n⚡ *Impact Player / 12th Man:* ${imp.name} (${imp.role})\n`;
+        }
+      }
+
+      let feeText = fix.feeApplicable && fix.fee > 0 ? `*Match Fee:* $${fix.fee} per player\n` : "";
+
+      return `🏏 *${teamTitle} - MATCH DAY SQUAD* 🏏\n` +
+             `━━━━━━━━━━━━━━━━━━━\n` +
+             `⚔️ *vs. ${fix.opponent}*\n` +
+             `📅 *Date:* ${fix.date}\n` +
+             `⏰ *Time:* ${fix.time}\n` +
+             `📍 *Venue:* ${fix.venue}\n` +
+             `🏆 *Format:* ${fix.format}\n` +
+             feeText +
+             `━━━━━━━━━━━━━━━━━━━\n` +
+             `📋 *STARTING PLAYING XI:*\n` +
+             lineupLines + `\n` +
+             impactText +
+             `━━━━━━━━━━━━━━━━━━━\n` +
+             (motivation ? `🔥 *Captains Note:* \n"${motivation}"\n\n` : "") +
+             `🐺 *#OneTeam #PlayHard*`;
+    }
+
+    function generateWhatsAppPreview() {
+      const previewEl = document.getElementById("whatsAppPreview");
+      previewEl.innerText = buildFormattedWhatsAppText();
+    }
+
+    function copyWhatsAppMessage() {
+      const text = buildFormattedWhatsAppText();
+      navigator.clipboard.writeText(text).then(() => {
+        alert("Playing XI announcement copied to clipboard!");
+      });
+    }
+
+    function sendWhatsAppMessage() {
+      const text = buildFormattedWhatsAppText();
+      const encoded = encodeURIComponent(text);
+      window.open(`https://api.whatsapp.com/send?text=${encoded}`, '_blank');
+    }
+
+    // --- FIXTURE EDIT & REMINDERS ---
+    function openEditFixtureModal(fixtureId) {
+      const fix = fixtures.find(f => f.id === fixtureId);
+      if (!fix) return;
+
+      document.getElementById("editFixId").value = fix.id;
+      document.getElementById("editOpponent").value = fix.opponent;
+      document.getElementById("editDate").value = fix.date;
+      document.getElementById("editTime").value = fix.time;
+      document.getElementById("editVenue").value = fix.venue;
+      document.getElementById("editStatus").value = fix.status || "Upcoming";
+
+      const feeApplicable = Boolean(fix.feeApplicable && fix.fee > 0);
+      document.getElementById("editFeeApplicable").checked = feeApplicable;
+      document.getElementById("editFeeAmount").value = fix.fee || config.defaultMatchFee || 20;
+      toggleEditFeeVisibility();
+
+      document.getElementById("editCustomNote").value = "";
+      openModal("editFixtureModal");
+    }
+
+    function saveFixtureEdits(event) {
+      event.preventDefault();
+      const id = document.getElementById("editFixId").value;
+      const fix = fixtures.find(f => f.id === id);
+      if (!fix) return;
+
+      const previousDate = fix.date;
+      const previousTime = fix.time;
+
+      fix.opponent = document.getElementById("editOpponent").value;
+      fix.date = document.getElementById("editDate").value;
+      fix.time = document.getElementById("editTime").value;
+      fix.venue = document.getElementById("editVenue").value;
+      const newStatus = document.getElementById("editStatus").value;
+      fix.status = newStatus;
+
+      const feeApp = document.getElementById("editFeeApplicable").checked;
+      fix.feeApplicable = feeApp;
+      fix.fee = feeApp ? (parseFloat(document.getElementById("editFeeAmount").value) || 0) : 0;
+
+      const reminderType = document.querySelector('input[name="reminderType"]:checked').value;
+      const customNote = document.getElementById("editCustomNote").value.trim();
+
+      let alertMessage = "";
+      if (newStatus === "Cancelled") {
+        alertMessage = `🚨 MATCH CANCELLED: vs ${fix.opponent} scheduled for ${previousDate} has been cancelled.`;
+      } else if (previousDate !== fix.date || previousTime !== fix.time || newStatus === "Rescheduled") {
+        alertMessage = `📅 SCHEDULE UPDATE: Match vs ${fix.opponent} is now on ${fix.date} at ${fix.time} (${fix.venue}).`;
+      } else {
+        alertMessage = `📢 FIXTURE NOTICE: Match details updated for vs ${fix.opponent} on ${fix.date}.`;
+      }
+
+      if (customNote) alertMessage += ` Note: "${customNote}"`;
+
+      if (reminderType === "reanswer" && newStatus !== "Cancelled") {
+        fix.rsvps = {};
+        alertMessage += " ⚠️ RSVPs have been reset. Please re-confirm your availability!";
+      }
+
+      chatMessages.push({
+        id: "c_" + Date.now(),
+        author: "Match Operations",
+        text: alertMessage,
+        time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+        isManager: true
+      });
+
+      saveState();
+      closeModal("editFixtureModal");
+      renderFixtures();
+      renderChat();
+      renderParticipationLedger();
+      alert("Match details updated and notification broadcasted.");
     }
 
     function createFixture(event) {
@@ -692,6 +1540,9 @@
         fee: feeAmount,
         status: "Upcoming",
         rsvps: {},
+        playingXI: [],
+        impactPlayerId: null,
+        reminderSchedule: null,
         dues: {},
         report: null
       };
@@ -700,106 +1551,10 @@
       saveState();
       closeModal("addFixtureModal");
       renderFixtures();
+      renderParticipationLedger();
     }
 
-    function setRSVP(fixId, pId, status) {
-      const fix = fixtures.find(f => f.id === fixId);
-      if (!fix) return;
-      if (!fix.rsvps) fix.rsvps = {};
-      fix.rsvps[pId] = status;
-      saveState();
-      renderFixtures();
-    }
-
-    // Lineup Builder
-    function renderLineupBuilder() {
-      const filterEl = document.getElementById("filterAttendingOnly");
-      const filterAttending = filterEl ? filterEl.checked : false;
-      const activeFixture = fixtures[0];
-
-      const poolList = document.getElementById("playerPoolList");
-      const xiList = document.getElementById("playingXIList");
-      if (!poolList || !xiList) return;
-      poolList.innerHTML = "";
-      xiList.innerHTML = "";
-
-      const xiIds = playingXI.map(item => item.id);
-      let pool = players.filter(p => !xiIds.includes(p.id));
-
-      if (filterAttending && activeFixture && activeFixture.rsvps) {
-        pool = pool.filter(p => activeFixture.rsvps[p.id] === "attending");
-      }
-
-      document.getElementById("poolCount").innerText = `${pool.length} available`;
-      document.getElementById("xiCount").innerText = `${playingXI.length} / 11`;
-
-      pool.forEach(player => {
-        const item = document.createElement("div");
-        item.className = "p-2 rounded-lg border border-slate-100 bg-slate-50 flex items-center justify-between text-xs";
-        item.innerHTML = `
-          <div>
-            <div class="font-semibold text-slate-800">${player.name}</div>
-            <div class="text-[11px] text-slate-400">${player.role} • ${player.bat}</div>
-          </div>
-          <button onclick="addToXI('${player.id}')" class="px-2 py-1 bg-blue-600 hover:bg-blue-700 text-white rounded-md text-[11px] font-medium transition">
-            + Pick
-          </button>
-        `;
-        poolList.appendChild(item);
-      });
-
-      playingXI.forEach((item, index) => {
-        const player = players.find(p => p.id === item.id);
-        if (!player) return;
-
-        const row = document.createElement("div");
-        row.className = "p-2 rounded-lg border border-slate-100 bg-white flex items-center justify-between text-xs shadow-2xs";
-        row.innerHTML = `
-          <div class="flex items-center gap-2">
-            <span class="w-5 h-5 rounded-md bg-slate-100 text-slate-600 flex items-center justify-center font-bold text-[10px]">${index + 1}</span>
-            <div>
-              <span class="font-semibold text-slate-800">${player.name}</span>
-              ${item.isCaptain ? '<span class="ml-1 bg-amber-100 text-amber-800 px-1 py-0.2 rounded font-bold text-[9px]">C</span>' : ''}
-              ${item.isWK ? '<span class="ml-1 bg-indigo-100 text-indigo-800 px-1 py-0.2 rounded font-bold text-[9px]">WK</span>' : ''}
-              <div class="text-[10px] text-slate-400">${player.role}</div>
-            </div>
-          </div>
-          <div class="flex items-center gap-1">
-            <button onclick="movePlayer(${index}, -1)" ${index === 0 ? 'disabled class="opacity-20"' : ''} class="p-1 hover:bg-slate-100 rounded text-slate-500">▲</button>
-            <button onclick="movePlayer(${index}, 1)" ${index === playingXI.length - 1 ? 'disabled class="opacity-20"' : ''} class="p-1 hover:bg-slate-100 rounded text-slate-500">▼</button>
-            <button onclick="toggleCaptain(${index})" class="px-1.5 py-0.5 rounded text-[10px] font-bold ${item.isCaptain ? 'bg-amber-600 text-white' : 'bg-slate-100 text-slate-600'}">C</button>
-            <button onclick="toggleWK(${index})" class="px-1.5 py-0.5 rounded text-[10px] font-bold ${item.isWK ? 'bg-indigo-600 text-white' : 'bg-slate-100 text-slate-600'}">WK</button>
-            <button onclick="removeFromXI(${index})" class="text-rose-500 hover:text-rose-700 p-1"><i class="fa-solid fa-trash text-[11px]"></i></button>
-          </div>
-        `;
-        xiList.appendChild(row);
-      });
-    }
-
-    function addToXI(id) {
-      if (playingXI.length >= 11) { alert("Playing XI is full (11 players)."); return; }
-      playingXI.push({ id, isCaptain: false, isWK: false });
-      saveState();
-      renderLineupBuilder();
-    }
-    function removeFromXI(idx) { playingXI.splice(idx, 1); saveState(); renderLineupBuilder(); }
-    function movePlayer(idx, dir) {
-      const target = idx + dir;
-      if (target < 0 || target >= playingXI.length) return;
-      const tmp = playingXI[idx]; playingXI[idx] = playingXI[target]; playingXI[target] = tmp;
-      saveState(); renderLineupBuilder();
-    }
-    function toggleCaptain(idx) {
-      playingXI.forEach((p, i) => p.isCaptain = (i === idx ? !p.isCaptain : false));
-      saveState(); renderLineupBuilder();
-    }
-    function toggleWK(idx) {
-      playingXI.forEach((p, i) => p.isWK = (i === idx ? !p.isWK : false));
-      saveState(); renderLineupBuilder();
-    }
-    function resetPlayingXI() { playingXI = []; saveState(); renderLineupBuilder(); }
-
-    // Dues Ledger
+    // --- DUES LEDGER ---
     function populateDuesDropdown() {
       const select = document.getElementById("duesFixtureSelect");
       if (!select) return;
@@ -818,6 +1573,17 @@
 
       if (!fixture) {
         container.innerHTML = `<p class="text-xs text-slate-400">No fixtures recorded.</p>`;
+        return;
+      }
+
+      if (fixture.status === "Cancelled") {
+        container.innerHTML = `
+          <div class="py-8 text-center bg-rose-50 rounded-xl border border-dashed border-rose-200">
+            <i class="fa-solid fa-ban text-rose-300 text-2xl mb-2"></i>
+            <h4 class="text-xs font-bold text-rose-700">Fixture Cancelled</h4>
+            <p class="text-[11px] text-rose-400">No dues applicable for cancelled games.</p>
+          </div>
+        `;
         return;
       }
 
@@ -892,7 +1658,7 @@
       renderDuesTable();
     }
 
-    // Community / Chat / Polls
+    // --- COMMUNITY & CHAT ---
     function renderChat() {
       const container = document.getElementById("chatMessages");
       if (!container) return;
@@ -988,7 +1754,7 @@
       renderPolls();
     }
 
-    // Roster
+    // --- ROSTER ---
     function renderRoster() {
       const container = document.getElementById("rosterList");
       if (!container) return;
@@ -1019,11 +1785,13 @@
       saveState();
       closeModal("addPlayerModal");
       renderRoster();
+      renderParticipationLedger();
     }
 
-    // Modal Helpers
+    // --- MODAL UTILITIES ---
     function openModal(id) {
       if (id === "settingsModal") {
+        document.getElementById("globalClubName").value = config.clubName || "Montréal Werewolves CC";
         document.getElementById("globalDefaultFee").value = config.defaultMatchFee || 20;
       }
       if (id === "addFixtureModal") {
@@ -1032,6 +1800,27 @@
       document.getElementById(id).classList.remove("hidden");
     }
     function closeModal(id) { document.getElementById(id).classList.add("hidden"); }
+
+    function saveClubSettings(event) {
+      event.preventDefault();
+      config.clubName = document.getElementById("globalClubName").value.trim() || "Montréal Werewolves CC";
+      config.defaultMatchFee = parseFloat(document.getElementById("globalDefaultFee").value) || 0;
+      saveState();
+      closeModal("settingsModal");
+      alert("Club settings saved!");
+    }
+
+    function toggleFeeInputVisibility() {
+      const isChecked = document.getElementById("fixFeeApplicable").checked;
+      const container = document.getElementById("feeInputContainer");
+      if (container) isChecked ? container.classList.remove("hidden") : container.classList.add("hidden");
+    }
+
+    function toggleEditFeeVisibility() {
+      const isChecked = document.getElementById("editFeeApplicable").checked;
+      const container = document.getElementById("editFeeContainer");
+      if (container) isChecked ? container.classList.remove("hidden") : container.classList.add("hidden");
+    }
 
     function openMatchReportModal(fixtureId) {
       document.getElementById("reportFixtureId").value = fixtureId;
@@ -1060,7 +1849,7 @@
       renderFixtures();
     }
 
-    // Initial load
+    // Initial render
     renderFixtures();
   </script>
 </body>
