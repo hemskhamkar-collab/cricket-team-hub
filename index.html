@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Cricket Team Hub</title>
+  <title>Cricket Team Hub - RBAC & Match Management</title>
 
   <!-- PWA & Mobile Meta Tags -->
   <meta name="mobile-web-app-capable" content="yes" />
@@ -38,7 +38,7 @@
         </div>
         <div>
           <h1 class="text-base font-bold tracking-tight text-slate-900 leading-tight">Cricket Team Hub</h1>
-          <p class="text-[11px] text-slate-500 font-medium">Club Operations & Squad Management</p>
+          <p class="text-[11px] text-slate-500 font-medium" id="headerClubTitle">Montréal Werewolves CC</p>
         </div>
       </div>
 
@@ -46,17 +46,23 @@
         <button onclick="clearAppCache()" class="text-[11px] text-slate-400 hover:text-rose-600 px-2 py-1 transition" title="Reset local cache to defaults">
           <i class="fa-solid fa-rotate text-xs mr-1"></i>Reset
         </button>
-        <button onclick="openModal('settingsModal')" class="manager-only px-2.5 py-1.5 text-xs font-medium text-slate-600 bg-slate-100 hover:bg-slate-200 rounded-lg flex items-center gap-1.5 transition">
+
+        <!-- Settings Modal (Visible to Manager & Captain) -->
+        <button id="btnSettingsMenu" onclick="openModal('settingsModal')" class="px-2.5 py-1.5 text-xs font-medium text-slate-700 bg-slate-100 hover:bg-slate-200 rounded-lg flex items-center gap-1.5 transition">
           <i class="fa-solid fa-gear text-slate-500"></i>
-          <span class="hidden sm:inline">Club Settings</span>
+          <span>Settings</span>
         </button>
+
+        <!-- Role & Persona Switcher -->
         <div class="flex items-center gap-1.5 bg-slate-100 px-2.5 py-1 rounded-lg border border-slate-200">
           <i class="fa-regular fa-circle-user text-slate-500 text-xs"></i>
           <select id="personaSelect" onchange="switchPersona(this.value)" class="bg-transparent text-xs font-medium text-slate-700 outline-none cursor-pointer">
-            <option value="manager">👑 Manager / Captain</option>
-            <option value="p1">🏃 Hemant (All-Rounder)</option>
-            <option value="p2">🏃 Alex (Batsman)</option>
-            <option value="p3">🏃 Samir (Bowler)</option>
+            <option value="manager">👑 Role: Manager</option>
+            <option value="captain">🏏 Role: Captain</option>
+            <option value="coach">📋 Role: Coach</option>
+            <option value="p1">🏃 Player: Hemant (All-Rounder)</option>
+            <option value="p2">🏃 Player: Alex (Batsman)</option>
+            <option value="p3">🏃 Player: Samir (Bowler)</option>
           </select>
         </div>
       </div>
@@ -95,7 +101,7 @@
           <h2 class="text-lg font-bold text-slate-900">Matches & Attendance</h2>
           <p class="text-xs text-slate-500">Upcoming fixtures, RSVP responses, and automated availability reminders.</p>
         </div>
-        <button onclick="openModal('addFixtureModal')" class="manager-only px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold rounded-lg shadow-xs flex items-center gap-1.5 transition">
+        <button id="btnScheduleFixture" onclick="openModal('addFixtureModal')" class="px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold rounded-lg shadow-xs flex items-center gap-1.5 transition">
           <i class="fa-solid fa-plus text-xs"></i> New Fixture
         </button>
       </div>
@@ -153,7 +159,7 @@
                 <span class="text-xs font-bold uppercase tracking-wider text-slate-500">Playing XI Batting Order</span>
                 <span id="xiCount" class="text-xs font-bold px-2 py-0.5 rounded-full bg-blue-50 text-blue-700">0 / 11</span>
               </div>
-              <button onclick="resetPlayingXI()" class="text-xs text-rose-600 hover:underline font-medium">Clear XI</button>
+              <button id="btnClearXI" onclick="resetPlayingXI()" class="text-xs text-rose-600 hover:underline font-medium">Clear XI</button>
             </div>
             <div id="playingXIList" class="space-y-1.5 min-h-[260px]"></div>
           </div>
@@ -195,7 +201,7 @@
         <div class="lg:col-span-1 bg-white rounded-xl border border-slate-200 p-4 shadow-xs space-y-3">
           <div class="flex items-center justify-between border-b border-slate-100 pb-2.5">
             <span class="text-xs font-bold uppercase tracking-wider text-slate-500">Quick Match Polls</span>
-            <button onclick="openModal('addPollModal')" class="manager-only text-[11px] font-semibold text-blue-600 hover:text-blue-700 bg-blue-50 px-2 py-0.5 rounded transition">+ New</button>
+            <button id="btnNewPoll" onclick="openModal('addPollModal')" class="text-[11px] font-semibold text-blue-600 hover:text-blue-700 bg-blue-50 px-2 py-0.5 rounded transition">+ New</button>
           </div>
           <div id="pollsContainer" class="space-y-3"></div>
         </div>
@@ -226,7 +232,7 @@
           <h2 class="text-lg font-bold text-slate-900">Squad Roster</h2>
           <p class="text-xs text-slate-500">Player profiles, batting styles, and bowling variations.</p>
         </div>
-        <button onclick="openModal('addPlayerModal')" class="manager-only px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold rounded-lg shadow-xs transition">
+        <button id="btnAddPlayer" onclick="openModal('addPlayerModal')" class="px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold rounded-lg shadow-xs transition">
           + Add Player
         </button>
       </div>
@@ -237,7 +243,100 @@
 
   <!-- ==================== MODALS ==================== -->
 
-  <!-- Modal: Schedule Availability Reminder (For Unanswered Players) -->
+  <!-- Modal: Settings Menu (Match Fee Configuration & RBAC Matrix) -->
+  <div id="settingsModal" class="hidden fixed inset-0 bg-slate-900/40 backdrop-blur-xs flex items-center justify-center p-4 z-50">
+    <div class="bg-white rounded-xl max-w-lg w-full p-5 shadow-lg border border-slate-200">
+      <div class="flex items-center justify-between mb-3 border-b border-slate-100 pb-2">
+        <h3 class="text-sm font-bold text-slate-900 flex items-center gap-1.5">
+          <i class="fa-solid fa-gear text-blue-600"></i> Settings & Match Fee Maintenance
+        </h3>
+        <button onclick="closeModal('settingsModal')" class="text-slate-400 hover:text-slate-600 text-xs"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+
+      <form onsubmit="saveClubSettings(event)" class="space-y-4 text-xs">
+        <!-- 1. Club Identity & Match Fee Maintenance -->
+        <div class="p-3 bg-slate-50 rounded-lg border border-slate-200 space-y-2.5">
+          <span class="font-bold text-slate-800 uppercase tracking-wider text-[10px] block">
+            1. Match Fee Maintenance (Captain & Manager Level)
+          </span>
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
+            <div>
+              <label class="block font-medium text-slate-700 mb-1">Club / Team Name</label>
+              <input type="text" id="globalClubName" required class="w-full border border-slate-200 rounded-lg p-2 bg-white outline-none" />
+            </div>
+            <div>
+              <label class="block font-medium text-slate-700 mb-1">Standard League Match Fee ($)</label>
+              <input type="number" id="globalDefaultFee" min="0" step="1" required class="w-full border border-slate-200 rounded-lg p-2 bg-white outline-none" />
+            </div>
+          </div>
+          <p class="text-[11px] text-slate-500">
+            This fee serves as the default rate per player when fixtures are scheduled by Captain or Manager.
+          </p>
+        </div>
+
+        <!-- 2. RBAC Permissions Matrix -->
+        <div class="p-3 bg-slate-50 rounded-lg border border-slate-200 space-y-2">
+          <div class="flex items-center justify-between">
+            <span class="font-bold text-slate-800 uppercase tracking-wider text-[10px]">
+              2. Role-Based Access Control (RBAC) Matrix
+            </span>
+            <span class="text-[10px] text-slate-400">View vs Edit Access</span>
+          </div>
+
+          <div class="overflow-x-auto">
+            <table class="w-full text-left text-[11px] border-collapse">
+              <thead>
+                <tr class="border-b border-slate-200 text-slate-500 uppercase font-semibold text-[10px]">
+                  <th class="py-1 px-2">Role</th>
+                  <th class="py-1 px-2">Match Fees</th>
+                  <th class="py-1 px-2">Lineup/12th</th>
+                  <th class="py-1 px-2">Fixtures</th>
+                  <th class="py-1 px-2">Squad</th>
+                </tr>
+              </thead>
+              <tbody class="divide-y divide-slate-200 text-slate-700 font-medium">
+                <tr>
+                  <td class="py-1.5 px-2 font-bold text-blue-700">Manager</td>
+                  <td class="py-1.5 px-2 text-emerald-700">Full Edit</td>
+                  <td class="py-1.5 px-2 text-emerald-700">Full Edit</td>
+                  <td class="py-1.5 px-2 text-emerald-700">Full Edit</td>
+                  <td class="py-1.5 px-2 text-emerald-700">Full Edit</td>
+                </tr>
+                <tr>
+                  <td class="py-1.5 px-2 font-bold text-indigo-700">Captain</td>
+                  <td class="py-1.5 px-2 text-emerald-700">Full Edit</td>
+                  <td class="py-1.5 px-2 text-emerald-700">Full Edit</td>
+                  <td class="py-1.5 px-2 text-emerald-700">Full Edit</td>
+                  <td class="py-1.5 px-2 text-slate-500">View Only</td>
+                </tr>
+                <tr>
+                  <td class="py-1.5 px-2 font-bold text-amber-700">Coach</td>
+                  <td class="py-1.5 px-2 text-slate-500">View Only</td>
+                  <td class="py-1.5 px-2 text-emerald-700">Full Edit</td>
+                  <td class="py-1.5 px-2 text-slate-500">View Only</td>
+                  <td class="py-1.5 px-2 text-slate-500">View Only</td>
+                </tr>
+                <tr>
+                  <td class="py-1.5 px-2 font-bold text-slate-600">Player</td>
+                  <td class="py-1.5 px-2 text-slate-500">Own Dues</td>
+                  <td class="py-1.5 px-2 text-slate-500">View Only</td>
+                  <td class="py-1.5 px-2 text-slate-500">RSVP Only</td>
+                  <td class="py-1.5 px-2 text-slate-500">View Only</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <div class="flex justify-end gap-2 pt-1">
+          <button type="button" onclick="closeModal('settingsModal')" class="px-3 py-1.5 text-slate-600 hover:bg-slate-100 rounded-lg">Cancel</button>
+          <button type="submit" class="px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-lg">Save Settings</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Modal: Schedule Availability Reminder -->
   <div id="reminderModal" class="hidden fixed inset-0 bg-slate-900/40 backdrop-blur-xs flex items-center justify-center p-4 z-50">
     <div class="bg-white rounded-xl max-w-md w-full p-5 shadow-lg border border-slate-200">
       <div class="flex items-center justify-between mb-3 border-b border-slate-100 pb-2">
@@ -248,7 +347,6 @@
       </div>
 
       <div class="space-y-3.5 text-xs">
-        <!-- Target Info -->
         <div class="p-2.5 bg-amber-50/80 rounded-lg border border-amber-200 text-amber-900">
           <div class="flex items-center justify-between font-bold text-xs mb-1">
             <span id="reminderMatchTitle">Match: vs. Opponent</span>
@@ -257,7 +355,6 @@
           <p class="text-[11px] text-amber-800" id="reminderPendingList">Targeting unanswered players...</p>
         </div>
 
-        <!-- Option A: Instant WhatsApp Broadcast -->
         <div class="space-y-1.5">
           <label class="block font-bold text-slate-800">1. Instant WhatsApp Nudge (To Unanswered Players)</label>
           <div id="reminderWhatsAppPreview" class="p-2.5 bg-slate-100 rounded-lg border border-slate-200 text-slate-700 font-mono text-[10px] whitespace-pre-wrap max-h-28 overflow-y-auto"></div>
@@ -271,7 +368,6 @@
           </div>
         </div>
 
-        <!-- Option B: Schedule In-App Availability Deadline -->
         <form onsubmit="saveScheduledReminder(event)" class="space-y-2.5 pt-2 border-t border-slate-100">
           <label class="block font-bold text-slate-800">2. Schedule RSVP Cutoff & In-App Broadcast</label>
           <div class="grid grid-cols-2 gap-2">
@@ -385,6 +481,7 @@
           </div>
         </div>
 
+        <!-- Match Fee Configurable by Captain & Manager -->
         <div class="p-2.5 bg-slate-50 border border-slate-200 rounded-lg space-y-2">
           <label class="inline-flex items-center gap-2 cursor-pointer">
             <input type="checkbox" id="editFeeApplicable" onchange="toggleEditFeeVisibility()" class="rounded text-blue-600 focus:ring-0" />
@@ -419,30 +516,6 @@
         <div class="flex justify-end gap-2 pt-2">
           <button type="button" onclick="closeModal('editFixtureModal')" class="px-3 py-1.5 text-slate-600 hover:bg-slate-100 rounded-lg">Cancel</button>
           <button type="submit" class="px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-lg">Update & Send Alert</button>
-        </div>
-      </form>
-    </div>
-  </div>
-
-  <!-- Modal: Club Settings -->
-  <div id="settingsModal" class="hidden fixed inset-0 bg-slate-900/40 backdrop-blur-xs flex items-center justify-center p-4 z-50">
-    <div class="bg-white rounded-xl max-w-sm w-full p-5 shadow-lg border border-slate-200">
-      <div class="flex items-center justify-between mb-3 border-b border-slate-100 pb-2">
-        <h3 class="text-sm font-bold text-slate-900">Club Global Settings</h3>
-        <button onclick="closeModal('settingsModal')" class="text-slate-400 hover:text-slate-600 text-xs"><i class="fa-solid fa-xmark"></i></button>
-      </div>
-      <form onsubmit="saveClubSettings(event)" class="space-y-3 text-xs">
-        <div>
-          <label class="block font-medium text-slate-700 mb-1">Club / Team Name</label>
-          <input type="text" id="globalClubName" placeholder="e.g. Montréal Werewolves CC" class="w-full border border-slate-200 rounded-lg p-2 bg-slate-50 outline-none" />
-        </div>
-        <div>
-          <label class="block font-medium text-slate-700 mb-1">Standard League Match Fee ($)</label>
-          <input type="number" id="globalDefaultFee" min="0" step="1" required class="w-full border border-slate-200 rounded-lg p-2 bg-slate-50 outline-none" />
-        </div>
-        <div class="flex justify-end gap-2 pt-2">
-          <button type="button" onclick="closeModal('settingsModal')" class="px-3 py-1.5 text-slate-600 hover:bg-slate-100 rounded-lg">Cancel</button>
-          <button type="submit" class="px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-lg">Save Settings</button>
         </div>
       </form>
     </div>
@@ -751,9 +824,25 @@
       clearAppCache();
     }
 
+    // Role state: "manager" | "captain" | "coach" | playerId
     let currentPersona = "manager";
     let selectedLineupFixtureId = (fixtures[0] && fixtures[0].id) || null;
     let activeReminderFixtureId = null;
+
+    // --- RBAC PERMISSIONS ENGINE ---
+    function getRoleCapabilities(persona) {
+      if (persona === "manager") {
+        return { canEditSettings: true, canEditMatchFee: true, canEditLineup: true, canEditFixtures: true, canEditDues: true, canEditRoster: true };
+      }
+      if (persona === "captain") {
+        return { canEditSettings: true, canEditMatchFee: true, canEditLineup: true, canEditFixtures: true, canEditDues: true, canEditRoster: false };
+      }
+      if (persona === "coach") {
+        return { canEditSettings: false, canEditMatchFee: false, canEditLineup: true, canEditFixtures: false, canEditDues: false, canEditRoster: false };
+      }
+      // Player
+      return { canEditSettings: false, canEditMatchFee: false, canEditLineup: false, canEditFixtures: false, canEditDues: false, canEditRoster: false };
+    }
 
     function saveState() {
       localStorage.setItem("cricket_config", JSON.stringify(config));
@@ -787,14 +876,38 @@
 
     function switchPersona(val) {
       currentPersona = val;
-      const managerElements = document.querySelectorAll(".manager-only");
-      managerElements.forEach(el => {
-        if (currentPersona === "manager") el.classList.remove("hidden");
-        else el.classList.add("hidden");
-      });
+      applyRBAC();
       renderFixtures();
       renderDuesTable();
       renderParticipationLedger();
+    }
+
+    function applyRBAC() {
+      const caps = getRoleCapabilities(currentPersona);
+
+      // Settings Menu visibility (Manager & Captain)
+      const btnSettings = document.getElementById("btnSettingsMenu");
+      if (btnSettings) {
+        caps.canEditSettings ? btnSettings.classList.remove("hidden") : btnSettings.classList.add("hidden");
+      }
+
+      // Schedule fixture button
+      const btnSched = document.getElementById("btnScheduleFixture");
+      if (btnSched) {
+        caps.canEditFixtures ? btnSched.classList.remove("hidden") : btnSched.classList.add("hidden");
+      }
+
+      // Add squad player button
+      const btnAddPlayer = document.getElementById("btnAddPlayer");
+      if (btnAddPlayer) {
+        caps.canEditRoster ? btnAddPlayer.classList.remove("hidden") : btnAddPlayer.classList.add("hidden");
+      }
+
+      // Clear Playing XI button
+      const btnClearXI = document.getElementById("btnClearXI");
+      if (btnClearXI) {
+        caps.canEditLineup ? btnClearXI.classList.remove("hidden") : btnClearXI.classList.add("hidden");
+      }
     }
 
     function renderCurrentTab(tabId) {
@@ -812,6 +925,9 @@
       if (!container) return;
       container.innerHTML = "";
 
+      const caps = getRoleCapabilities(currentPersona);
+      const isPlayer = !caps.canEditFixtures && !caps.canEditLineup;
+
       fixtures.forEach(fixture => {
         const rsvps = fixture.rsvps || {};
         let attending = 0, tentative = 0, declined = 0;
@@ -821,11 +937,10 @@
           if (s === "declined") declined++;
         });
 
-        // Compute Unanswered Count
         const unansweredPlayers = players.filter(p => !rsvps[p.id] || rsvps[p.id] === "unanswered");
         const unansweredCount = unansweredPlayers.length;
 
-        const myStatus = currentPersona !== "manager" ? (rsvps[currentPersona] || "unanswered") : null;
+        const myStatus = isPlayer ? (rsvps[currentPersona] || "unanswered") : null;
         const feeIsApplicable = Boolean(fixture.feeApplicable && fixture.fee > 0);
         const isNotCompleted = fixture.status !== "Completed";
         const isCancelled = fixture.status === "Cancelled";
@@ -874,22 +989,23 @@
                 <button onclick="goToLineupForFixture('${fixture.id}')" class="text-[11px] font-semibold text-blue-600 bg-blue-50 hover:bg-blue-100 px-2.5 py-1 rounded-lg transition">
                   <i class="fa-solid fa-users-viewfinder mr-1"></i>XI
                 </button>
-                <button onclick="openEditFixtureModal('${fixture.id}')" class="manager-only text-[11px] font-medium text-slate-600 bg-slate-100 hover:bg-slate-200 px-2 py-1 rounded-lg transition border border-slate-200 ${currentPersona !== 'manager' ? 'hidden' : ''}">
-                  <i class="fa-regular fa-pen-to-square"></i>
-                </button>
+                ${caps.canEditFixtures ? `
+                  <button onclick="openEditFixtureModal('${fixture.id}')" class="text-[11px] font-medium text-slate-600 bg-slate-100 hover:bg-slate-200 px-2 py-1 rounded-lg transition border border-slate-200">
+                    <i class="fa-regular fa-pen-to-square"></i>
+                  </button>
+                ` : ''}
               ` : ''}
 
               ${fixture.report ? `
                 <span class="text-[11px] font-bold px-2.5 py-1 rounded-lg bg-emerald-100 text-emerald-800">${fixture.report.result}</span>
-              ` : (fixture.status !== 'Cancelled' ? `
-                <button onclick="openMatchReportModal('${fixture.id}')" class="manager-only text-[11px] font-medium text-slate-600 bg-slate-100 hover:bg-slate-200 px-2.5 py-1 rounded-lg transition border border-slate-200 ${currentPersona !== 'manager' ? 'hidden' : ''}">
+              ` : (fixture.status !== 'Cancelled' && caps.canEditFixtures ? `
+                <button onclick="openMatchReportModal('${fixture.id}')" class="text-[11px] font-medium text-slate-600 bg-slate-100 hover:bg-slate-200 px-2.5 py-1 rounded-lg transition border border-slate-200">
                   Result
                 </button>
               ` : '')}
             </div>
           </div>
 
-          <!-- Attendance Counter & Reminder Trigger -->
           ${!isCancelled ? `
             <div class="space-y-2">
               <div class="grid grid-cols-4 gap-1 bg-slate-50 p-2 rounded-lg text-center text-[11px] border border-slate-100">
@@ -899,7 +1015,6 @@
                 <div><span class="font-bold text-slate-600">${unansweredCount}</span> <span class="text-slate-400">Unanswered</span></div>
               </div>
 
-              <!-- Scheduled Reminder Badge (if active) -->
               ${fixture.reminderSchedule ? `
                 <div class="px-2.5 py-1 bg-amber-50 text-amber-900 border border-amber-200 rounded-lg text-[10px] flex items-center justify-between">
                   <span><i class="fa-regular fa-clock mr-1"></i>RSVP Cutoff: <strong>${fixture.reminderSchedule.date} at ${fixture.reminderSchedule.time}</strong></span>
@@ -907,9 +1022,8 @@
                 </div>
               ` : ''}
 
-              <!-- Manager Reminder Button -->
-              ${unansweredCount > 0 && isNotCompleted ? `
-                <div class="manager-only flex items-center justify-end ${currentPersona !== 'manager' ? 'hidden' : ''}">
+              ${unansweredCount > 0 && isNotCompleted && caps.canEditFixtures ? `
+                <div class="flex items-center justify-end">
                   <button onclick="openReminderModal('${fixture.id}')" class="px-2.5 py-1 bg-amber-100 hover:bg-amber-200 text-amber-900 font-semibold rounded-lg text-[11px] flex items-center gap-1.5 transition">
                     <i class="fa-solid fa-bell"></i> Nudge Unanswered (${unansweredCount})
                   </button>
@@ -932,7 +1046,7 @@
             </div>
           ` : ''}
 
-          ${currentPersona !== "manager" && !isCancelled ? `
+          ${isPlayer && !isCancelled ? `
             <div class="flex items-center justify-between pt-2 border-t border-slate-100 text-xs">
               <span class="text-[11px] text-slate-500 font-medium">Your RSVP: <strong class="uppercase text-blue-600">${myStatus}</strong></span>
               <div class="flex gap-1">
@@ -962,7 +1076,7 @@
       renderParticipationLedger();
     }
 
-    // --- REMINDER SCHEDULING & UNANSWERED BROADCAST ENGINE ---
+    // --- REMINDER SCHEDULING ENGINE ---
     function openReminderModal(fixtureId) {
       activeReminderFixtureId = fixtureId;
       const fix = fixtures.find(f => f.id === fixtureId);
@@ -975,7 +1089,6 @@
       document.getElementById("reminderPendingBadge").innerText = `${unansweredPlayers.length} Pending`;
       document.getElementById("reminderPendingList").innerText = unansweredPlayers.map(p => p.name).join(", ") || "None";
 
-      // Populate schedule inputs if existing
       if (fix.reminderSchedule) {
         document.getElementById("schedDeadlineDate").value = fix.reminderSchedule.date || "";
         document.getElementById("schedDeadlineTime").value = fix.reminderSchedule.time || "";
@@ -1003,7 +1116,7 @@
              `⚠️ *Awaiting Availability from:*\n` +
              `${namesList}\n` +
              `━━━━━━━━━━━━━━━━━━━\n` +
-             `👉 Please update your RSVP in the team app so the Playing XI can be locked in on time!\n` +
+             `👉 Please confirm your availability so the Playing XI can be finalized on time!\n` +
              `🐺 *#OneTeam #MontréalWerewolves*`;
     }
 
@@ -1013,9 +1126,7 @@
       const rsvps = fix.rsvps || {};
       const unanswered = players.filter(p => !rsvps[p.id] || rsvps[p.id] === "unanswered");
       const text = buildReminderWhatsAppText(fix, unanswered);
-      navigator.clipboard.writeText(text).then(() => {
-        alert("Reminder message copied to clipboard!");
-      });
+      navigator.clipboard.writeText(text).then(() => alert("Reminder message copied to clipboard!"));
     }
 
     function sendReminderWhatsApp() {
@@ -1024,8 +1135,7 @@
       const rsvps = fix.rsvps || {};
       const unanswered = players.filter(p => !rsvps[p.id] || rsvps[p.id] === "unanswered");
       const text = buildReminderWhatsAppText(fix, unanswered);
-      const encoded = encodeURIComponent(text);
-      window.open(`https://api.whatsapp.com/send?text=${encoded}`, '_blank');
+      window.open(`https://api.whatsapp.com/send?text=${encodeURIComponent(text)}`, '_blank');
     }
 
     function saveScheduledReminder(event) {
@@ -1043,7 +1153,6 @@
       const unanswered = players.filter(p => !rsvps[p.id] || rsvps[p.id] === "unanswered");
       const names = unanswered.map(p => p.name).join(", ");
 
-      // Post broadcast to Team Room
       chatMessages.push({
         id: "c_" + Date.now(),
         author: "Match Operations",
@@ -1059,7 +1168,7 @@
       alert("Reminder scheduled & posted to Team Room!");
     }
 
-    // --- PLAYING XI & IMPACT PLAYER LOGIC ---
+    // --- PLAYING XI & IMPACT PLAYER BUILDER ---
     function populateLineupDropdown() {
       const select = document.getElementById("lineupFixtureSelect");
       if (!select) return;
@@ -1085,6 +1194,9 @@
       if (!activeFixture) return;
 
       if (!activeFixture.playingXI) activeFixture.playingXI = [];
+
+      const caps = getRoleCapabilities(currentPersona);
+      const canEdit = caps.canEditLineup;
 
       const filterEl = document.getElementById("filterAttendingOnly");
       const filterAttending = filterEl ? filterEl.checked : false;
@@ -1124,16 +1236,18 @@
                   <div class="text-[10px] text-purple-700 font-medium">${impPlayer.role} • ${impPlayer.bat} Bat</div>
                 </div>
               </div>
-              <button onclick="removeImpactPlayer()" class="manager-only text-rose-500 hover:text-rose-700 p-1 text-xs transition ${currentPersona !== 'manager' ? 'hidden' : ''}">
-                <i class="fa-solid fa-trash mr-1"></i>Remove
-              </button>
+              ${canEdit ? `
+                <button onclick="removeImpactPlayer()" class="text-rose-500 hover:text-rose-700 p-1 text-xs transition">
+                  <i class="fa-solid fa-trash mr-1"></i>Remove
+                </button>
+              ` : ''}
             </div>
           `;
         }
       } else {
         impactSlot.innerHTML = `
           <div class="p-2.5 rounded-lg border border-dashed border-purple-200 bg-white/50 text-center text-xs text-purple-600 font-medium">
-            No Impact Player / 12th Man assigned. Select "+ Impact" from the squad pool below.
+            ${canEdit ? 'No Impact Player / 12th Man assigned. Pick "+ Impact" from squad pool below.' : 'No Impact Player / 12th Man assigned.'}
           </div>
         `;
       }
@@ -1146,14 +1260,16 @@
             <div class="font-semibold text-slate-800">${player.name}</div>
             <div class="text-[11px] text-slate-400">${player.role} • ${player.bat}</div>
           </div>
-          <div class="flex items-center gap-1.5 ${currentPersona !== 'manager' ? 'hidden' : ''}">
-            <button onclick="setAsImpactPlayer('${player.id}')" class="manager-only px-2 py-1 bg-purple-100 hover:bg-purple-200 text-purple-800 rounded-md text-[11px] font-semibold transition">
-              + Impact
-            </button>
-            <button onclick="addToFixtureXI('${player.id}')" class="manager-only px-2 py-1 bg-blue-600 hover:bg-blue-700 text-white rounded-md text-[11px] font-medium transition">
-              + XI
-            </button>
-          </div>
+          ${canEdit ? `
+            <div class="flex items-center gap-1.5">
+              <button onclick="setAsImpactPlayer('${player.id}')" class="px-2 py-1 bg-purple-100 hover:bg-purple-200 text-purple-800 rounded-md text-[11px] font-semibold transition">
+                + Impact
+              </button>
+              <button onclick="addToFixtureXI('${player.id}')" class="px-2 py-1 bg-blue-600 hover:bg-blue-700 text-white rounded-md text-[11px] font-medium transition">
+                + XI
+              </button>
+            </div>
+          ` : '<span class="text-[10px] text-slate-400 font-medium">Available</span>'}
         `;
         poolList.appendChild(item);
       });
@@ -1174,13 +1290,15 @@
               <div class="text-[10px] text-slate-400">${player.role}</div>
             </div>
           </div>
-          <div class="flex items-center gap-1 ${currentPersona !== 'manager' ? 'hidden' : ''}">
-            <button onclick="movePlayer(${index}, -1)" ${index === 0 ? 'disabled class="opacity-20"' : ''} class="p-1 hover:bg-slate-100 rounded text-slate-500">▲</button>
-            <button onclick="movePlayer(${index}, 1)" ${index === activeFixture.playingXI.length - 1 ? 'disabled class="opacity-20"' : ''} class="p-1 hover:bg-slate-100 rounded text-slate-500">▼</button>
-            <button onclick="toggleCaptain(${index})" class="px-1.5 py-0.5 rounded text-[10px] font-bold ${item.isCaptain ? 'bg-amber-600 text-white' : 'bg-slate-100 text-slate-600'}">C</button>
-            <button onclick="toggleWK(${index})" class="px-1.5 py-0.5 rounded text-[10px] font-bold ${item.isWK ? 'bg-indigo-600 text-white' : 'bg-slate-100 text-slate-600'}">WK</button>
-            <button onclick="removeFromFixtureXI(${index})" class="text-rose-500 hover:text-rose-700 p-1"><i class="fa-solid fa-trash text-[11px]"></i></button>
-          </div>
+          ${canEdit ? `
+            <div class="flex items-center gap-1">
+              <button onclick="movePlayer(${index}, -1)" ${index === 0 ? 'disabled class="opacity-20"' : ''} class="p-1 hover:bg-slate-100 rounded text-slate-500">▲</button>
+              <button onclick="movePlayer(${index}, 1)" ${index === activeFixture.playingXI.length - 1 ? 'disabled class="opacity-20"' : ''} class="p-1 hover:bg-slate-100 rounded text-slate-500">▼</button>
+              <button onclick="toggleCaptain(${index})" class="px-1.5 py-0.5 rounded text-[10px] font-bold ${item.isCaptain ? 'bg-amber-600 text-white' : 'bg-slate-100 text-slate-600'}">C</button>
+              <button onclick="toggleWK(${index})" class="px-1.5 py-0.5 rounded text-[10px] font-bold ${item.isWK ? 'bg-indigo-600 text-white' : 'bg-slate-100 text-slate-600'}">WK</button>
+              <button onclick="removeFromFixtureXI(${index})" class="text-rose-500 hover:text-rose-700 p-1"><i class="fa-solid fa-trash text-[11px]"></i></button>
+            </div>
+          ` : ''}
         `;
         xiList.appendChild(row);
       });
@@ -1437,15 +1555,12 @@
 
     function copyWhatsAppMessage() {
       const text = buildFormattedWhatsAppText();
-      navigator.clipboard.writeText(text).then(() => {
-        alert("Playing XI announcement copied to clipboard!");
-      });
+      navigator.clipboard.writeText(text).then(() => alert("Playing XI announcement copied to clipboard!"));
     }
 
     function sendWhatsAppMessage() {
       const text = buildFormattedWhatsAppText();
-      const encoded = encodeURIComponent(text);
-      window.open(`https://api.whatsapp.com/send?text=${encoded}`, '_blank');
+      window.open(`https://api.whatsapp.com/send?text=${encodeURIComponent(text)}`, '_blank');
     }
 
     // --- FIXTURE EDIT & REMINDERS ---
@@ -1599,6 +1714,7 @@
         return;
       }
 
+      const caps = getRoleCapabilities(currentPersona);
       let paidCount = 0;
       let totalAttending = 0;
 
@@ -1621,9 +1737,11 @@
               </span>
             </td>
             <td class="py-2.5 px-3 text-right">
-              <button onclick="toggleDue('${fixture.id}', '${player.id}')" class="manager-only px-2 py-1 bg-slate-100 hover:bg-slate-200 rounded text-[11px] text-slate-700 transition ${currentPersona !== 'manager' ? 'hidden' : ''}">
-                Toggle
-              </button>
+              ${caps.canEditDues ? `
+                <button onclick="toggleDue('${fixture.id}', '${player.id}')" class="px-2 py-1 bg-slate-100 hover:bg-slate-200 rounded text-[11px] text-slate-700 transition">
+                  Toggle
+                </button>
+              ` : '<span class="text-[10px] text-slate-400">Read-only</span>'}
             </td>
           </tr>
         `;
@@ -1686,14 +1804,18 @@
       const text = input.value.trim();
       if (!text) return;
 
-      const authorName = currentPersona === "manager" ? "Manager" : (players.find(p => p.id === currentPersona)?.name || "Player");
+      let authorName = "Teammate";
+      if (currentPersona === "manager") authorName = "Manager";
+      else if (currentPersona === "captain") authorName = "Captain";
+      else if (currentPersona === "coach") authorName = "Coach";
+      else authorName = players.find(p => p.id === currentPersona)?.name || "Player";
 
       chatMessages.push({
         id: "c_" + Date.now(),
         author: authorName,
         text: text,
         time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-        isManager: currentPersona === "manager"
+        isManager: currentPersona === "manager" || currentPersona === "captain"
       });
 
       input.value = "";
@@ -1805,9 +1927,10 @@
       event.preventDefault();
       config.clubName = document.getElementById("globalClubName").value.trim() || "Montréal Werewolves CC";
       config.defaultMatchFee = parseFloat(document.getElementById("globalDefaultFee").value) || 0;
+      document.getElementById("headerClubTitle").innerText = config.clubName;
       saveState();
       closeModal("settingsModal");
-      alert("Club settings saved!");
+      alert("Club settings and match fees updated successfully!");
     }
 
     function toggleFeeInputVisibility() {
@@ -1849,7 +1972,8 @@
       renderFixtures();
     }
 
-    // Initial render
+    // Initial load
+    applyRBAC();
     renderFixtures();
   </script>
 </body>
